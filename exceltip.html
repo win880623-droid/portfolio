@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 快捷鍵手冊 - 雲端藍風格</title>
+    <style>
+        :root {
+            --sky-blue: #a5d8ff;
+            --deep-blue: #1971c2;
+            --soft-white: rgba(255, 255, 255, 0.88);
+            --text-color: #343a40;
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #e7f5ff 0%, #a5d8ff 50%, #d0ebff 100%);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--deep-blue); font-size: 2.2em; text-shadow: 0 2px 4px rgba(255,255,255,0.5); }
+
+        /* 管理工具列 */
+        .toolbar {
+            background: var(--soft-white);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid var(--sky-blue);
+            border-radius: 10px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .editor-zone {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: rgba(255,255,255,0.4);
+            padding: 12px;
+            border-radius: 10px;
+            align-items: center;
+        }
+
+        select, input, button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+        }
+
+        .btn-add { background: var(--deep-blue); color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background: #155da1; }
+
+        /* 分類區塊 */
+        .category-group {
+            margin-bottom: 30px;
+            background: var(--soft-white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-header {
+            background: linear-gradient(90deg, #74c0fc, #a5d8ff);
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.15em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cat-actions button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            margin-left: 5px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .cat-actions button:hover { background: rgba(255,255,255,0.4); }
+
+        .shortcut-table { width: 100%; border-collapse: collapse; }
+        .shortcut-table td { padding: 12px 20px; border-bottom: 1px solid #e9ecef; }
+        
+        .key-code {
+            font-family: "Consolas", monospace;
+            color: #0b7285;
+            font-weight: bold;
+            background: #e3fafc;
+            padding: 4px 8px;
+            border-radius: 5px;
+            border: 1px solid #c5f6fa;
+        }
+
+        .btn-del-item { color: #ff8787; cursor: pointer; border: none; background: none; font-size: 1.2em; }
+        .btn-del-item:hover { color: #fa5252; }
+
+        .hidden { display: none !important; }
+        #customCatInput { display: none; border: 2px solid #74c0fc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Excel 快捷鍵快速查詢</h1>
+    </header>
+
+    <div class="toolbar">
+        <input type="text" id="searchInput" class="search-box" placeholder="搜尋快捷鍵或功能描述..." oninput="filterData()">
+        
+        <div class="editor-zone">
+            <strong>新增項目：</strong>
+            <select id="newCat" onchange="toggleCustomCat()">
+                <option value="一、 最常用快捷鍵">一、 最常用快捷鍵</option>
+                <option value="二、 儲存格瀏覽與巡覽">二、 儲存格瀏覽與巡覽</option>
+                <option value="三、 儲存格格式設定">三、 儲存格格式設定</option>
+                <option value="四、 選取並執行動作">四、 選取並執行動作</option>
+                <option value="五、 處理數據、函數與編輯列">五、 處理數據、函數與編輯列</option>
+                <option value="NEW">✨ + 新增大類...</option>
+            </select>
+            <input type="text" id="customCatInput" placeholder="輸入新大類名稱">
+            <input type="text" id="newKey" placeholder="按鍵 (例: Ctrl + T)">
+            <input type="text" id="newDesc" placeholder="功能描述">
+            <button class="btn-add" onclick="addNewItem()">確認新增</button>
+        </div>
+    </div>
+
+    <div id="contentDisplay"></div>
+</div>
+
+<script>
+    // 完整資料清單
+    const initialData = [
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + W", desc: "關閉活頁簿[1]" },
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + O", desc: "開啟活頁簿[1]" },
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + S", desc: "儲存活頁簿" },
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + C", desc: "複製" },
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + V", desc: "貼上" },
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + Z", desc: "復原" },
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + X", desc: "剪下[1]" },
+        { cat: "一、 最常用快捷鍵", key: "Ctrl + B", desc: "套用粗體[1][2]" },
+        { cat: "一、 最常用快捷鍵", key: "Delete", desc: "移除儲存格內容[1]" },
+        { cat: "一、 最常用快捷鍵", key: "Alt + H", desc: "移至 [常用] 索引標籤[3]" },
+        { cat: "一、 最常用快捷鍵", key: "Alt + N", desc: "移至 [插入] 索引標籤[3]" },
+        { cat: "一、 最常用快捷鍵", key: "Alt + P", desc: "移至 [版面配置] 索引標籤" },
+        { cat: "一、 最常用快捷鍵", key: "Alt + A", desc: "移至 [資料] 索引標籤" },
+        { cat: "一、 最常用快捷鍵", key: "Alt + W", desc: "移至 [檢視] 索引標籤" },
+        { cat: "一、 最常用快捷鍵", key: "Shift + F10", desc: "開啟快顯功能表 (右鍵選單)" },
+
+        { cat: "二、 儲存格瀏覽與巡覽", key: "方向鍵", desc: "向上、下、左或右移動一個儲存格" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Ctrl + 方向鍵", desc: "移至目前資料範圍的邊緣" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Home", desc: "移至列的開頭" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Ctrl + Home", desc: "移至工作表的開頭 (A1)" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Ctrl + End", desc: "移至工作表上有資料的最後一個儲存格" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Page Up", desc: "向上移動一個螢幕" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Page Down", desc: "向下移動一個螢幕" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Alt + Page Up / Down", desc: "向左 / 向右移動一個螢幕" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Tab", desc: "在工作表中向右移動一個儲存格" },
+        { cat: "二、 儲存格瀏覽與巡覽", key: "Shift + Tab", desc: "在工作表中向左移動一個儲存格" },
+
+        { cat: "三、 儲存格格式設定", key: "Ctrl + 1", desc: "開啟 [儲存格格式] 對話方塊" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + B / Ctrl + 2", desc: "套用或移除粗體" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + I / Ctrl + 3", desc: "套用或移除斜體" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + U / Ctrl + 4", desc: "套用或移除底線" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + 5", desc: "套用或移除刪除線" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + Shift + $", desc: "套用 [貨幣] 格式（兩位小數）" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + Shift + %", desc: "套用 [百分比] 格式（無小數）" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + Shift + #", desc: "套用 [日期] 格式（日-月-年）" },
+        { cat: "三、 儲存格格式設定", key: "Ctrl + Shift + !", desc: "套用 [數值] 格式（兩位小數與千分比分隔符號）" },
+        { cat: "三、 儲存格格式設定", key: "Alt + H, B", desc: "套用外框（框線）" },
+
+        { cat: "四、 選取並執行動作", key: "Ctrl + A", desc: "選取整個工作表（或目前的資料範圍）" },
+        { cat: "四、 選取並執行動作", key: "Shift + 空白鍵", desc: "選取整列" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + 空白鍵", desc: "選取整欄[2]" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + Shift + 方向鍵", desc: "將選取範圍擴充到最後一個非空白儲存格" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + Shift + End", desc: "將選取範圍擴充到工作表上有資料的最後一個儲存格" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + D", desc: "向下填滿（將最上方儲存格內容複製到下方選取區域）" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + R", desc: "向右填滿" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + F", desc: "尋找[1][4][5]" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + H", desc: "取代" },
+        { cat: "四、 選取並執行動作", key: "Ctrl + K", desc: "插入超連結" },
+
+        { cat: "五、 處理數據、函數與編輯列", key: "= (等號)", desc: "開始公式" },
+        { cat: "五、 處理數據、函數與編輯列", key: "Alt + =", desc: "插入自動加總 (AutoSum)" },
+        { cat: "五、 處理數據、函數與編輯列", key: "Ctrl + ;", desc: "輸入目前日期" },
+        { cat: "五、 處理數據、函數與編輯列", key: "Ctrl + Shift + :", desc: "輸入目前時間" },
+        { cat: "五、 處理數據、函數與編輯列", key: "Ctrl + '", desc: "將公式從上方儲存格複製到目前儲存格" },
+        { cat: "五、 處理數據、函數與編輯列", key: "F2", desc: "編輯目前的儲存格" },
+        { cat: "五、 處理數據、函數與編輯列", key: "Esc", desc: "取消儲存格或編輯列中的輸入" },
+        { cat: "五、 處理數據、函數與編輯列", key: "Enter", desc: "完成儲存格輸入並向下移動" },
+        { cat: "五、 處理數據、函數與編輯列", key: "Shift + Enter", desc: "完成儲存格輸入並向上移動" }
+    ];
+
+    let db = JSON.parse(localStorage.getItem('excel_db_cloud_v2')) || initialData;
+
+    function render() {
+        const display = document.getElementById('contentDisplay');
+        const select = document.getElementById('newCat');
+        display.innerHTML = '';
+        
+        // 獲取目前所有大類
+        const categories = [...new Set(db.map(item => item.cat))];
+        
+        // 更新下拉選單 (保留最後一個 NEW 選項)
+        const currentSelected = select.value;
+        select.innerHTML = '';
+        categories.forEach(c => {
+            const opt = new Option(c, c);
+            select.add(opt);
+        });
+        select.add(new Option("✨ + 新增大類...", "NEW"));
+        if ([...categories, "NEW"].includes(currentSelected)) select.value = currentSelected;
+
+        // 渲染分類區塊
+        categories.forEach(catName => {
+            const group = document.createElement('div');
+            group.className = 'category-group';
+            group.innerHTML = `
+                <div class="category-header">
+                    <span>${catName}</span>
+                    <div class="cat-actions">
+                        <button onclick="renameCategory('${catName}')" title="重新命名大類">編輯</button>
+                        <button onclick="deleteCategory('${catName}')" title="刪除整個大類">刪除</button>
+                    </div>
+                </div>`;
+            
+            const table = document.createElement('table');
+            table.className = 'shortcut-table';
+            const tbody = document.createElement('tbody');
+            
+            db.filter(i => i.cat === catName).forEach((item) => {
+                const globalIdx = db.indexOf(item);
+                const tr = document.createElement('tr');
+                tr.className = 'data-row';
+                tr.innerHTML = `
+                    <td style="width:35%"><span class="key-code">${item.key}</span></td>
+                    <td>${item.desc}</td>
+                    <td style="width:40px"><button class="btn-del-item" onclick="deleteItem(${globalIdx})">&times;</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            table.appendChild(tbody);
+            group.appendChild(table);
+            display.appendChild(group);
+        });
+        localStorage.setItem('excel_db_cloud_v2', JSON.stringify(db));
+    }
+
+    // 控制自定義分類輸入框顯示
+    function toggleCustomCat() {
+        const select = document.getElementById('newCat');
+        const customInput = document.getElementById('customCatInput');
+        customInput.style.display = (select.value === "NEW") ? "inline-block" : "none";
+    }
+
+    // 新增項目 (含大類)
+    function addNewItem() {
+        const select = document.getElementById('newCat');
+        const customInput = document.getElementById('customCatInput');
+        const key = document.getElementById('newKey').value;
+        const desc = document.getElementById('newDesc').value;
+
+        let cat = select.value;
+        if (cat === "NEW") {
+            cat = customInput.value.trim();
+            if (!cat) return alert("請輸入新大類名稱");
+        }
+
+        if (!key || !desc) return alert("請填寫按鍵與功能描述");
+
+        db.push({ cat, key, desc });
+        render();
+        // 重置
+        document.getElementById('newKey').value = '';
+        document.getElementById('newDesc').value = '';
+        customInput.value = '';
+        select.value = cat;
+        toggleCustomCat();
+    }
+
+    // 修改大類名稱
+    function renameCategory(oldName) {
+        const newName = prompt(`將「${oldName}」重新命名為：`, oldName);
+        if (newName && newName !== oldName) {
+            db.forEach(item => {
+                if (item.cat === oldName) item.cat = newName;
+            });
+            render();
+        }
+    }
+
+    // 刪除整個大類
+    function deleteCategory(catName) {
+        if (confirm(`確定要刪除「${catName}」大類及其中所有快捷鍵嗎？`)) {
+            db = db.filter(item => item.cat !== catName);
+            render();
+        }
+    }
+
+    // 刪除單個項目
+    function deleteItem(index) {
+        db.splice(index, 1);
+        render();
+        filterData();
+    }
+
+    // 搜尋功能
+    function filterData() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('.data-row');
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
+        });
+        document.querySelectorAll('.category-group').forEach(group => {
+            const hasVisible = [...group.querySelectorAll('.data-row')].some(r => r.style.display !== 'none');
+            group.style.display = hasVisible ? '' : 'none';
+        });
+    }
+
+    render();
+</script>
+
+</body>
+</html>
