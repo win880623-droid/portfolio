@@ -3,78 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>黃楚昀 - 個人履歷</title>
+    <title>黃楚昀 - 個人介紹與履歷作品集</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fffaf0; color: #4a4030; }
-        .hover-card { transition: all 0.3s ease; }
-        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(180, 150, 100, 0.2); }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hover-card {
+            transition: all 0.3s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.15), 0 8px 10px -6px rgba(217, 119, 6, 0.1);
+        }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="bg-amber-50/80 text-stone-800 antialiased selection:bg-amber-200 selection:text-amber-900">
 
-    <div class="max-w-4xl mx-auto space-y-8">
+    <main class="max-w-2xl mx-auto px-4 py-8 md:py-12 space-y-6">
         
-        <!-- Header -->
-        <header class="bg-amber-50 p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8 shadow-md border border-amber-200">
-            <div class="w-32 h-32 rounded-full border-4 border-amber-200 overflow-hidden flex-shrink-0 bg-gray-200">
-                <img src="https://win880623-droid.github.io/portfolio/usagi.jpeg" alt="黃楚昀" class="w-full h-full object-cover">
+        <!-- 頂部：個人照片、姓名與一句話自我定位 -->
+        <header class="bg-white/90 backdrop-blur-md border border-amber-200/80 rounded-3xl p-6 md:p-8 shadow-sm hover-card flex flex-col items-center text-center gap-4">
+            <div class="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-amber-200 shadow-inner flex-shrink-0 bg-amber-100 flex items-center justify-center">
+                <img src="https://win880623-droid.github.io/portfolio/usagi.jpeg" alt="黃楚昀的個人照片" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/150x150/fde68a/78350f?text=楚昀';">
             </div>
-            <div class="text-center md:text-left">
-                <h1 class="text-4xl font-bold text-brown">黃楚昀</h1>
-                <p class="text-amber-800 text-lg mt-1 font-medium">餐飲與食品專業人員，願意學習、敢於挑戰。</p>
-                <div class="mt-4 flex flex-wrap justify-center md:justify-start gap-4 text-sm text-amber-900/70">
-                    <span>📍 新竹市</span>
-                    <span>📧 win880623@gmail.com</span>
-                    <span>📞 0981-191-717</span>
+            
+            <div class="w-full">
+                <div class="inline-block px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold mb-2">
+                    餐飲、食品人員 / 待業中
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-amber-950 tracking-tight">黃楚昀 <span class="text-lg font-normal text-stone-500">(Thuly)</span></h1>
+                <p class="text-amber-800/90 font-medium mt-1">願意學，敢嘗試，希望能學習越來越多技術與技能。</p>
+                
+                <!-- 簡易聯絡資訊 -->
+                <div class="flex flex-wrap justify-center gap-2 mt-4 text-xs md:text-sm text-stone-600">
+                    <span class="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/50">
+                        📱 0981-191-717
+                    </span>
+                    <span class="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/50">
+                        📧 win880623@gmail.com
+                    </span>
+                    <span class="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/50">
+                        📍 新竹市北區
+                    </span>
                 </div>
             </div>
         </header>
 
-        <main class="space-y-8">
+        <!-- 關於我 -->
+        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
+            <h2 class="text-lg font-bold text-amber-950 mb-3 border-l-4 border-amber-400 pl-3">關於我</h2>
+            <p class="text-sm md:text-base text-stone-600 leading-relaxed">
+                畢業於弘光科技大學餐旅管理系。就學期間嘗試過各種不同的內外場工作，平時也會關注餐旅相關的社交媒體。雖然社會經歷尚在累積中，但我願意認真學、敢嘗試，期望未來能挑戰自己，並拓展外語能力。
+            </p>
+        </section>
+
+        <!-- 工作經歷 -->
+        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
+            <h2 class="text-lg font-bold text-amber-950 mb-6 border-l-4 border-amber-400 pl-3">工作經歷</h2>
             
-            <section class="bg-amber-50 p-6 rounded-3xl shadow-sm hover-card border border-amber-200">
-                <h2 class="text-lg font-bold text-amber-900 mb-4 border-l-4 border-amber-400 pl-3">關於我</h2>
-                <p class="text-sm leading-relaxed text-gray-700">畢業於弘光科技大學餐旅管理系。具備內外場實務經驗與食品行銷企劃能力。待人誠懇、工作細心，擁有強烈學習動機，期望能持續挑戰並學習第二、第三專長。</p>
-            </section>
+            <div class="space-y-6 relative border-l-2 border-amber-200 ml-3 pl-6">
+                <!-- 經歷 1 -->
+                <div class="relative">
+                    <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-400 border-4 border-white"></div>
+                    <span class="text-xs font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-md">2024.09 - 2024.12 (4個月)</span>
+                    <h3 class="text-base font-bold text-stone-900 mt-1.5">研究助理</h3>
+                    <p class="text-xs text-stone-500">財團法人食品工業發展研究所 | 新竹市</p>
+                    <p class="text-sm text-stone-600 mt-2">協助機構內部各項研究與專案相關技術支援及助理工作。</p>
+                </div>
 
-            <section class="bg-amber-50 p-6 rounded-3xl shadow-sm hover-card border border-amber-200">
-                <h2 class="text-lg font-bold text-amber-900 mb-4 border-l-4 border-amber-400 pl-3">工作與教育經驗</h2>
-                <div class="space-y-4">
-                    <div class="border-b border-amber-200 pb-3">
-                        <h3 class="font-bold text-sm">研究助理 | 食品工業發展研究所</h3>
-                        <p class="text-xs text-gray-500">2024.09 - 2024.12</p>
+                <!-- 經歷 2 -->
+                <div class="relative">
+                    <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-400 border-4 border-white"></div>
+                    <span class="text-xs font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-md">2021.12 - 2023.09 (1年10個月)</span>
+                    <h3 class="text-base font-bold text-stone-900 mt-1.5">早班門市人員 / 產品行銷企劃</h3>
+                    <p class="text-xs text-stone-500">建菘食品股份有限公司 / 商行 | 台中市沙鹿區</p>
+                    <p class="text-sm text-stone-600 mt-2">負責滴雞精產品後續處理、門市櫃台接待、Key 資料，以及擔任粉絲團小編進行社群行銷。</p>
+                </div>
+
+                <!-- 經歷 3 -->
+                <div class="relative">
+                    <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-400 border-4 border-white"></div>
+                    <span class="text-xs font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-md">2020.11 - 2021.04 (6個月)</span>
+                    <h3 class="text-base font-bold text-stone-900 mt-1.5">內場早班工讀生</h3>
+                    <p class="text-xs text-stone-500">Kua'aina 夏威夷漢堡 | 台中市梧棲區</p>
+                    <p class="text-sm text-stone-600 mt-2">負責餐廳內場備料、製作與出餐、送餐等工作。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 學歷背景 -->
+        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
+            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">學歷背景</h2>
+            <div class="p-4 bg-amber-50/40 rounded-2xl border border-amber-100">
+                <div class="flex justify-between items-start flex-wrap gap-2">
+                    <div>
+                        <h3 class="font-bold text-stone-900">私立弘光科技大學</h3>
+                        <p class="text-xs text-stone-600 mt-0.5">餐旅管理科 | 四技畢業</p>
                     </div>
-                    <div class="border-b border-amber-200 pb-3">
-                        <h3 class="font-bold text-sm">門市人員 | 建菘食品股份有限公司</h3>
-                        <p class="text-xs text-gray-500">2021.12 - 2023.09</p>
-                    </div>
+                    <span class="text-xs bg-amber-200/60 text-amber-900 font-medium px-2 py-1 rounded-lg">2017.09 - 2021.07</span>
                 </div>
-            </section>
+                <p class="text-xs text-stone-500 mt-2">在學期間維持班排前 10%，積極參與外師示範料理與英文輔導課程。</p>
+            </div>
+        </section>
 
-            <section class="bg-amber-50 p-6 rounded-3xl shadow-sm hover-card border border-amber-200">
-                <h2 class="text-lg font-bold text-amber-900 mb-4 border-l-4 border-amber-400 pl-3">證照與證書</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="p-3 bg-white rounded-xl text-xs text-center text-amber-900 border border-amber-200">丙級烘焙食品技術士</div>
-                    <div class="p-3 bg-white rounded-xl text-xs text-center text-amber-900 border border-amber-200">丙級中餐烹調技術士</div>
-                    <div class="p-3 bg-white rounded-xl text-xs text-center text-amber-900 border border-amber-200">TQC-OA 中文輸入</div>
-                    <div class="p-3 bg-white rounded-xl text-xs text-center text-amber-900 border border-amber-200">TQC-OA 英文輸入</div>
+        <!-- 3 項核心技能 -->
+        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
+            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">3 項核心技能</h2>
+            <div class="space-y-2.5">
+                <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                    <h3 class="text-xs font-semibold text-amber-900">餐旅服務與門市接待</h3>
+                    <p class="text-[11px] text-stone-500">具備內外場經驗、顧客接待與訂單處理。</p>
                 </div>
-            </section>
-
-            <section class="bg-amber-50 p-6 rounded-3xl shadow-sm hover-card border border-amber-200">
-                <h2 class="text-lg font-bold text-amber-900 mb-4 border-l-4 border-amber-400 pl-3">精選作品</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="block p-6 bg-white rounded-2xl hover:bg-amber-100 transition-colors text-sm text-center text-amber-900 border border-amber-200 h-32 flex items-center justify-center font-bold">
-                        Excel 快捷鍵小工具
-                    </a>
-                    <div class="block p-6 bg-gray-100 rounded-2xl text-sm text-center text-gray-400 border border-gray-200 h-32 flex items-center justify-center">待新增作品 B</div>
-                    <div class="block p-6 bg-gray-100 rounded-2xl text-sm text-center text-gray-400 border border-gray-200 h-32 flex items-center justify-center">待新增作品 C</div>
+                <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                    <h3 class="text-xs font-semibold text-amber-900">社群與行銷企劃</h3>
+                    <p class="text-[11px] text-stone-500">曾任社群小編，熟悉 FB、Instagram 操作。</p>
                 </div>
-            </section>
+                <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                    <h3 class="text-xs font-semibold text-amber-900">文書處理與行政支援</h3>
+                    <p class="text-[11px] text-stone-500">熟練 Excel、Word 與行政支援。</p>
+                </div>
+            </div>
+        </section>
 
-        </main>
-    </div>
+        <!-- 證照與證書 -->
+        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
+            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">證照與證書</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-stone-700">
+                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
+                    <span class="text-amber-600 font-bold">✓</span> 烘焙丙級麵包
+                </div>
+                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
+                    <span class="text-amber-600 font-bold">✓</span> 烘焙丙級西點
+                </div>
+                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
+                    <span class="text-amber-600 font-bold">✓</span> 中餐丙級葷食
+                </div>
+                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
+                    <span class="text-amber-600 font-bold">✓</span> 中餐丙級素食
+                </div>
+                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100 sm:col-span-2">
+                    <span class="text-amber-600 font-bold">✓</span> TQC中文輸入認證
+                </div>
+            </div>
+        </section>
+
+        <!-- 精選作品區塊 -->
+        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
+            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">精選作品</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- 作品 A：Excel 快捷鍵小工具 -->
+                <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="block p-5 bg-amber-50/60 hover:bg-amber-100/75 transition-all rounded-2xl text-center text-amber-950 border border-amber-200 h-36 flex flex-col items-center justify-center font-bold shadow-xs hover:shadow-md">
+                    <span class="text-2xl mb-1">📊</span>
+                    <span class="text-sm">excel快捷鍵小工具</span>
+                    <span class="text-[10px] text-amber-700 font-normal mt-1 underline">點擊前往預覽</span>
+                </a>
+                
+                <!-- 作品 B：課堂APIKEY應用算運小程式 -->
+                <a href="https://0804aiclasstest-production.up.railway.app/" target="_blank" class="block p-5 bg-amber-50/60 hover:bg-amber-100/75 transition-all rounded-2xl text-center text-amber-950 border border-amber-200 h-36 flex flex-col items-center justify-center font-bold shadow-xs hover:shadow-md">
+                    <span class="text-2xl mb-1">🤖</span>
+                    <span class="text-sm">課堂APIKEY應用算運小程式</span>
+                    <span class="text-[10px] text-amber-700 font-normal mt-1 underline">點擊前往預覽</span>
+                </a>
+
+                <!-- 作品 C：俄羅斯方塊小遊戲 -->
+                <a href="https://win880623-droid.github.io/portfolio/tetris.html" target="_blank" class="block p-5 bg-amber-50/60 hover:bg-amber-100/75 transition-all rounded-2xl text-center text-amber-950 border border-amber-200 h-36 flex flex-col items-center justify-center font-bold shadow-xs hover:shadow-md">
+                    <span class="text-2xl mb-1">🕹️</span>
+                    <span class="text-sm">俄羅斯方塊小遊戲</span>
+                    <span class="text-[10px] text-amber-700 font-normal mt-1 underline">點擊前往預覽</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 頁尾 -->
+        <footer class="text-center text-xs text-stone-500 py-6 border-t border-amber-200/50">
+            © 2026 黃楚昀 (Thuly) · 個人履歷與作品集網站
+        </footer>
+
+    </main>
+
 </body>
 </html>
