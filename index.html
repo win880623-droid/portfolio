@@ -1,188 +1,631 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>黃楚昀 - 個人介紹與履歷作品集</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>黃楚昀 - 個人介紹</title>
     <style>
+        :root {
+            --bg-color: #f7f3eb; /* 稍微調深一點的米黃色背景 */
+            --card-bg: #ffffff;
+            --text-primary: #1a1817; /* 調高對比的深色文字 */
+            --text-secondary: #4d4a47; /* 調高對比的次要文字 */
+            --accent: #9e6d3d; /* 調高對比的古銅金色 */
+            --accent-light: #f3e9db;
+            --border-color: #d4cec7; /* 加深邊框色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(255, 255, 255, 0.95) 0%, transparent 25%),
+                radial-gradient(circle at 90% 25%, rgba(255, 255, 255, 0.95) 0%, transparent 30%),
+                radial-gradient(circle at 20% 60%, rgba(255, 255, 255, 0.9) 0%, transparent 25%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.95) 0%, transparent 30%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.85) 0%, transparent 35%),
+                url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.8'%3E%3Cpath d='M60 45 c-8 -15 -25 -15 -30 0 c-15 5 -15 22 0 30 c5 15 25 15 30 0 c15 -5 15 -22 0 -30 z'/%3E%3Cpath d='M60 45 c8 -15 25 -15 30 0 c15 5 15 22 0 30 c-5 15 -25 15 -30 0 c-15 -5 -15 -22 0 -30 z'/%3E%3Cpath d='M45 60 c-15 -8 -15 -25 0 -30 c5 -15 22 -15 30 0 c15 5 15 25 0 30 c-5 15 -22 15 -30 0 z'/%3E%3Cpath d='M45 60 c-15 8 -15 25 0 30 c5 15 22 15 30 0 c15 -5 15 -25 0 -30 c-5 -15 -22 -15 -30 0 z'/%3E%3Ccircle cx='60' cy='60' r='6' fill='%23f3e9db'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: auto, auto, auto, auto, auto, 140px 140px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px 16px;
         }
-        .hover-card {
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Top Full-Width Navigation Bar */
+        .top-nav {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .top-nav a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .top-nav a:hover {
+            background-color: var(--accent-light);
+            color: var(--accent);
+            transform: translateY(-2px); /* Hover 浮動效果 */
+        }
+
+        /* Left Floating Navigation with Connected Dots */
+        .left-nav {
+            position: fixed;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .left-nav {
+                display: block;
+            }
+        }
+
+        .left-nav-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            position: relative;
+        }
+
+        /* Vertical connecting line through dots */
+        .left-nav-container::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            background-color: var(--border-color);
+            z-index: 1;
+        }
+
+        .nav-dot {
+            position: relative;
+            z-index: 2;
+            width: 14px;
+            height: 14px;
+            background-color: var(--card-bg);
+            border: 3px solid var(--accent);
+            border-radius: 50%;
             transition: all 0.3s ease;
+            display: block;
+            text-decoration: none;
         }
-        .hover-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.15), 0 8px 10px -6px rgba(217, 119, 6, 0.1);
+
+        .nav-dot:hover {
+            transform: scale(1.3); /* Hover 放大效果 */
+            background-color: var(--accent);
+        }
+
+        .nav-dot .tooltip {
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--text-primary);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .nav-dot:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* Header Section */
+        header {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            position: relative;
+        }
+
+        /* Profile Photo Styles */
+        .photo-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px auto;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--accent);
+            box-shadow: 0 4px 12px rgba(158, 109, 61, 0.25);
+            background-color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .meta-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* Sections */
+        section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            scroll-margin-top: 20px;
+            position: relative;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--accent-light);
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: 12px;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Skills Grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .skill-card {
+            background-color: var(--accent-light);
+            border: 1px solid #e0d2c3;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .skill-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .skill-card p {
+            font-size: 13px;
+        }
+
+        /* Certifications List */
+        .cert-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 640px) {
+            .cert-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .cert-item {
+            background-color: #f7f3eb;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .cert-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(158, 109, 61, 0.15);
+        }
+
+        .cert-item::before {
+            content: '📜';
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 540px) {
+            .projects-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .project-card {
+            background-color: #f7f3eb;
+            border: 1px solid var(--border-color); /* 改為實線 solid */
+            border-radius: 8px;
+            padding: 20px 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 120px;
+            transition: all 0.2s ease; /* Hover 平滑過渡 */
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px); /* Hover 浮動效果 */
+            border-color: var(--accent);
+            box-shadow: 0 6px 16px rgba(158, 109, 61, 0.15);
+        }
+
+        .project-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .project-card p {
+            font-size: 13px;
+        }
+
+        /* Contact Section */
+        .contact-list {
+            list-style: none;
+        }
+
+        .contact-list li {
+            font-size: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+
+        .contact-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-list strong {
+            color: var(--text-primary);
+            font-weight: 700;
+            min-width: 70px;
+        }
+
+        .contact-list a {
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .contact-list a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 32px;
+        }
+
+        /* Left Floating Action Button */
+        .left-fab {
+            position: fixed;
+            left: 20px;
+            bottom: 30px;
+            z-index: 100;
+            background-color: var(--accent);
+            color: #ffffff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(158, 109, 61, 0.4);
+            text-decoration: none;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid #ffffff;
+        }
+
+        .left-fab:hover {
+            transform: scale(1.1) translateY(-2px);
+            background-color: #835930;
+            box-shadow: 0 6px 18px rgba(158, 109, 61, 0.6);
+        }
+
+        .left-fab .fab-tooltip {
+            position: absolute;
+            left: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--text-primary);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            font-weight: 600;
+        }
+
+        .left-fab:hover .fab-tooltip {
+            opacity: 1;
         }
     </style>
 </head>
-<body class="bg-amber-50/80 text-stone-800 antialiased selection:bg-amber-200 selection:text-amber-900">
+<body>
 
-    <main class="max-w-2xl mx-auto px-4 py-8 md:py-12 space-y-6">
-        
-        <!-- 頂部：個人照片、姓名與一句話自我定位 -->
-        <header class="bg-white/90 backdrop-blur-md border border-amber-200/80 rounded-3xl p-6 md:p-8 shadow-sm hover-card flex flex-col items-center text-center gap-4">
-            <div class="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-amber-200 shadow-inner flex-shrink-0 bg-amber-100 flex items-center justify-center">
-                <img src="https://win880623-droid.github.io/portfolio/usagi.jpeg" alt="黃楚昀的個人照片" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/150x150/fde68a/78350f?text=楚昀';">
+    <!-- Left Floating Action Button -->
+    <a href="#about" class="left-fab" title="返回頂端或關於我">
+        <span>↑</span>
+        <div class="fab-tooltip">回到頂端</div>
+    </a>
+
+    <!-- Left Floating Connected Dots Navigation -->
+    <nav class="left-nav">
+        <div class="left-nav-container">
+            <a href="#about" class="nav-dot"><span class="tooltip">關於我</span></a>
+            <a href="#skills" class="nav-dot"><span class="tooltip">核心技能</span></a>
+            <a href="#certs" class="nav-dot"><span class="tooltip">證照與認證</span></a>
+            <a href="#projects" class="nav-dot"><span class="tooltip">作品區</span></a>
+            <a href="#contact" class="nav-dot"><span class="tooltip">聯絡方式</span></a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Top Full-Width Navigation -->
+        <nav class="top-nav">
+            <a href="#about">關於我</a>
+            <a href="#skills">核心技能</a>
+            <a href="#certs">證照與認證</a>
+            <a href="#projects">作品區</a>
+            <a href="#contact">聯絡方式</a>
+        </nav>
+
+        <!-- Header -->
+        <header>
+            <div class="photo-container">
+                <img src="https://win880623-droid.github.io/portfolio/usagi.jpeg" alt="黃楚昀照片" class="profile-photo" onerror="this.src='https://placehold.co/120x120/f3e9db/9e6d3d?text=Thuly'">
             </div>
-            
-            <div class="w-full">
-                <div class="inline-block px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold mb-2">
-                    餐飲、食品人員 / 待業中
-                </div>
-                <h1 class="text-3xl md:text-4xl font-bold text-amber-950 tracking-tight">黃楚昀 <span class="text-lg font-normal text-stone-500">(Thuly)</span></h1>
-                <p class="text-amber-800/90 font-medium mt-1">願意學，敢嘗試，希望能學習越來越多技術與技能。</p>
-                
-                <!-- 簡易聯絡資訊 -->
-                <div class="flex flex-wrap justify-center gap-2 mt-4 text-xs md:text-sm text-stone-600">
-                    <span class="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/50">
-                        📱 0981-191-717
-                    </span>
-                    <span class="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/50">
-                        📧 win880623@gmail.com
-                    </span>
-                    <span class="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/50">
-                        📍 新竹市北區
-                    </span>
-                </div>
+            <h1>黃楚昀 (Thuly)</h1>
+            <div class="tagline">餐旅管理系畢業 ｜ 願意學、敢嘗試</div>
+            <div class="meta-info">
+                <span>📍 新竹市</span>
+                <span>🎓 弘光科技大學餐旅管理系</span>
+                <span>💼 2-3年工作經驗</span>
             </div>
         </header>
 
-        <!-- 關於我 -->
-        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
-            <h2 class="text-lg font-bold text-amber-950 mb-3 border-l-4 border-amber-400 pl-3">關於我</h2>
-            <p class="text-sm md:text-base text-stone-600 leading-relaxed">
-                畢業於弘光科技大學餐旅管理系。就學期間嘗試過各種不同的內外場工作，平時也會關注餐旅相關的社交媒體。雖然社會經歷尚在累積中，但我願意認真學、敢嘗試，期望未來能挑戰自己，並拓展外語能力。
-            </p>
+        <!-- About Me -->
+        <section id="about">
+            <h2>關於我</h2>
+            <p>畢業於弘光科技大學餐旅管理系，具備餐飲內外場實務經驗與門市接待經歷。曾於財團法人食品工業發展研究所及食品企業服務，熟悉產品行銷企劃、社群小編經營與門市行政庶務。個性積極、樂於學習，期望在餐飲與食品領域持續深耕，挑戰自我。</p>
         </section>
 
-        <!-- 工作經歷 -->
-        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
-            <h2 class="text-lg font-bold text-amber-950 mb-6 border-l-4 border-amber-400 pl-3">工作經歷</h2>
-            
-            <div class="space-y-6 relative border-l-2 border-amber-200 ml-3 pl-6">
-                <!-- 經歷 1 -->
-                <div class="relative">
-                    <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-400 border-4 border-white"></div>
-                    <span class="text-xs font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-md">2024.09 - 2024.12 (4個月)</span>
-                    <h3 class="text-base font-bold text-stone-900 mt-1.5">研究助理</h3>
-                    <p class="text-xs text-stone-500">財團法人食品工業發展研究所 | 新竹市</p>
-                    <p class="text-sm text-stone-600 mt-2">協助機構內部各項研究與專案相關技術支援及助理工作。</p>
+        <!-- Skills -->
+        <section id="skills">
+            <h2>核心技能</h2>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <h3>餐飲實務與證照</h3>
+                    <p>中餐葷/素烹調、烘焙食品丙級技術士，具備豐富備料與出餐經驗</p>
                 </div>
-
-                <!-- 經歷 2 -->
-                <div class="relative">
-                    <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-400 border-4 border-white"></div>
-                    <span class="text-xs font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-md">2021.12 - 2023.09 (1年10個月)</span>
-                    <h3 class="text-base font-bold text-stone-900 mt-1.5">早班門市人員 / 產品行銷企劃</h3>
-                    <p class="text-xs text-stone-500">建菘食品股份有限公司 / 商行 | 台中市沙鹿區</p>
-                    <p class="text-sm text-stone-600 mt-2">負責滴雞精產品後續處理、門市櫃台接待、Key 資料，以及擔任粉絲團小編進行社群行銷。</p>
+                <div class="skill-card">
+                    <h3>門市接待與行政</h3>
+                    <p>熟練文書處理（Word/Excel）、中英文打字與顧客服務接待</p>
                 </div>
-
-                <!-- 經歷 3 -->
-                <div class="relative">
-                    <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-400 border-4 border-white"></div>
-                    <span class="text-xs font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-md">2020.11 - 2021.04 (6個月)</span>
-                    <h3 class="text-base font-bold text-stone-900 mt-1.5">內場早班工讀生</h3>
-                    <p class="text-xs text-stone-500">Kua'aina 夏威夷漢堡 | 台中市梧棲區</p>
-                    <p class="text-sm text-stone-600 mt-2">負責餐廳內場備料、製作與出餐、送餐等工作。</p>
+                <div class="skill-card">
+                    <h3>行銷企劃與社群</h3>
+                    <p>具備 FB / IG 粉絲團小編經營與產品行銷企劃實務經驗</p>
                 </div>
             </div>
         </section>
 
-        <!-- 學歷背景 -->
-        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
-            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">學歷背景</h2>
-            <div class="p-4 bg-amber-50/40 rounded-2xl border border-amber-100">
-                <div class="flex justify-between items-start flex-wrap gap-2">
-                    <div>
-                        <h3 class="font-bold text-stone-900">私立弘光科技大學</h3>
-                        <p class="text-xs text-stone-600 mt-0.5">餐旅管理科 | 四技畢業</p>
+        <!-- Certifications -->
+        <section id="certs">
+            <h2>證照</h2>
+            <ul class="cert-list">
+                <li class="cert-item">丙級烘焙食品技術士 (麵包、蛋糕)</li>
+                <li class="cert-item">丙級中餐烹調技術士 (葷食、素食)</li>
+                <li class="cert-item">TQC-OA 中文輸入認證 (20~50字/分)</li>
+            </ul>
+
+            <h2 style="margin-top: 32px; font-size: 20px;">AI認證</h2>
+            <div class="projects-grid" style="margin-top: 16px;">
+                <!-- AI Cert 1 -->
+                <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3;">
+                        <img src="https://api.accredible.com/v1/frontend/credential_website_embed_image/certificate/191070946" alt="Gemini 教育家" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://placehold.co/300x150/f3e9db/9e6d3d?text=Gemini+Educator'">
                     </div>
-                    <span class="text-xs bg-amber-200/60 text-amber-900 font-medium px-2 py-1 rounded-lg">2017.09 - 2021.07</span>
+                    <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">GOOGLE 認證</div>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">Gemini 教育家</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">證明您清楚瞭解 Gemini 的用途，並能負責任地運用 Google AI 提升效率、引導學生順利學習，創新學習體驗。</p>
+                    <a href="https://api.accredible.com/v1/frontend/credential_website_embed_image/certificate/191070946" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看認證</a>
                 </div>
-                <p class="text-xs text-stone-500 mt-2">在學期間維持班排前 10%，積極參與外師示範料理與英文輔導課程。</p>
+
+                <!-- AI Cert 2 -->
+                <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3;">
+                        <img src="https://api.accredible.com/v1/frontend/credential_website_embed_image/certificate/191064732?key=8188d267a4dbfa99af3ba1c06715ec0a0cd0b3eea8a9f623c893f30b08170dfa" alt="Gemini 教職員" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://placehold.co/300x150/f3e9db/9e6d3d?text=Gemini+Staff'">
+                    </div>
+                    <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">GOOGLE 認證</div>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">Gemini 教職員</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">證明您清楚瞭解 Gemini 的用途，並能負責任地運用 Google AI 提升研究效率、激發學生學習熱情，以及設計創新課程。</p>
+                    <a href="https://api.accredible.com/v1/frontend/credential_website_embed_image/certificate/191064732?key=8188d267a4dbfa99af3ba1c06715ec0a0cd0b3eea8a9f623c893f30b08170dfa" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看認證</a>
+                </div>
+
+                <!-- AI Cert 3 -->
+                <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3;">
+                        <img src="https://api.accredible.com/v1/frontend/credential_website_embed_image/certificate/191062298" alt="Gemini 大學生" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://placehold.co/300x150/f3e9db/9e6d3d?text=Gemini+Student'">
+                    </div>
+                    <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">GOOGLE 認證</div>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">Gemini 大學生</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">證明您清楚瞭解 Gemini 的用途，並能負責任地運用 Google AI 執行進階研究、確保學術嚴謹性，以及提升專業素養。</p>
+                    <a href="https://api.accredible.com/v1/frontend/credential_website_embed_image/certificate/191062298" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看認證</a>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 32px; font-size: 20px;">MOS證書</h2>
+            <div class="projects-grid" style="margin-top: 16px;">
+                <!-- MOS Cert 1 -->
+                <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700;">
+                        MOS 證書預留一
+                    </div>
+                    <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">MICROSOFT 認證</div>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">MOS 專業認證</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">此處可放置您的 MOS 證書簡短說明與介紹文字內容。</p>
+                    <a href="#" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看證書</a>
+                </div>
+
+                <!-- MOS Cert 2 -->
+                <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700;">
+                        MOS 證書預留二
+                    </div>
+                    <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">MICROSOFT 認證</div>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">MOS 專業認證</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">此處可放置您的 MOS 證書簡短說明與介紹文字內容。</p>
+                    <a href="#" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看證書</a>
+                </div>
+
+                <!-- MOS Cert 3 -->
+                <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700;">
+                        MOS 證書預留三
+                    </div>
+                    <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">MICROSOFT 認證</div>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">MOS 專業認證</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">此處可放置您的 MOS 證書簡短說明與介紹文字內容。</p>
+                    <a href="#" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看證書</a>
+                </div>
             </div>
         </section>
 
-        <!-- 3 項核心技能 -->
-        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
-            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">3 項核心技能</h2>
-            <div class="space-y-2.5">
-                <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
-                    <h3 class="text-xs font-semibold text-amber-900">餐旅服務與門市接待</h3>
-                    <p class="text-[11px] text-stone-500">具備內外場經驗、顧客接待與訂單處理。</p>
-                </div>
-                <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
-                    <h3 class="text-xs font-semibold text-amber-900">社群與行銷企劃</h3>
-                    <p class="text-[11px] text-stone-500">曾任社群小編，熟悉 FB、Instagram 操作。</p>
-                </div>
-                <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
-                    <h3 class="text-xs font-semibold text-amber-900">文書處理與行政支援</h3>
-                    <p class="text-[11px] text-stone-500">熟練 Excel、Word 與行政支援。</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 證照與證書 -->
-        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
-            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">證照與證書</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-stone-700">
-                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
-                    <span class="text-amber-600 font-bold">✓</span> 烘焙丙級麵包
-                </div>
-                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
-                    <span class="text-amber-600 font-bold">✓</span> 烘焙丙級西點
-                </div>
-                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
-                    <span class="text-amber-600 font-bold">✓</span> 中餐丙級葷食
-                </div>
-                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100">
-                    <span class="text-amber-600 font-bold">✓</span> 中餐丙級素食
-                </div>
-                <div class="flex items-center gap-2 bg-amber-50/40 p-3 rounded-xl border border-amber-100 sm:col-span-2">
-                    <span class="text-amber-600 font-bold">✓</span> TQC中文輸入認證
-                </div>
-            </div>
-        </section>
-
-        <!-- 精選作品區塊 -->
-        <section class="bg-white/90 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm hover-card border border-amber-200/80">
-            <h2 class="text-lg font-bold text-amber-950 mb-4 border-l-4 border-amber-400 pl-3">精選作品</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <!-- 作品 A：Excel 快捷鍵小工具 -->
-                <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="block p-5 bg-amber-50/60 hover:bg-amber-100/75 transition-all rounded-2xl text-center text-amber-950 border border-amber-200 h-36 flex flex-col items-center justify-center font-bold shadow-xs hover:shadow-md">
-                    <span class="text-2xl mb-1">📊</span>
-                    <span class="text-sm">excel快捷鍵小工具</span>
-                    <span class="text-[10px] text-amber-700 font-normal mt-1 underline">點擊前往預覽</span>
+        <!-- Projects -->
+        <section id="projects">
+            <h2>作品</h2>
+            <div class="projects-grid">
+                <a href="https://win880623-droid.github.io/portfolio/tetris.html" target="_blank" class="project-card" style="text-decoration: none; color: inherit;">
+                    <h3>俄羅斯方塊小遊戲</h3>
+                    <p>點擊體驗經典益智遊戲實作</p>
                 </a>
-                
-                <!-- 作品 B：課堂APIKEY應用算運小程式 -->
-                <a href="https://0804aiclasstest-production.up.railway.app/" target="_blank" class="block p-5 bg-amber-50/60 hover:bg-amber-100/75 transition-all rounded-2xl text-center text-amber-950 border border-amber-200 h-36 flex flex-col items-center justify-center font-bold shadow-xs hover:shadow-md">
-                    <span class="text-2xl mb-1">🤖</span>
-                    <span class="text-sm">課堂APIKEY應用算運小程式</span>
-                    <span class="text-[10px] text-amber-700 font-normal mt-1 underline">點擊前往預覽</span>
+                <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="project-card" style="text-decoration: none; color: inherit;">
+                    <h3>excel快捷鍵小工具</h3>
+                    <p>點擊體驗實用的快捷鍵學習工具</p>
                 </a>
-
-                <!-- 作品 C：俄羅斯方塊小遊戲 -->
-                <a href="https://win880623-droid.github.io/portfolio/tetris.html" target="_blank" class="block p-5 bg-amber-50/60 hover:bg-amber-100/75 transition-all rounded-2xl text-center text-amber-950 border border-amber-200 h-36 flex flex-col items-center justify-center font-bold shadow-xs hover:shadow-md">
-                    <span class="text-2xl mb-1">🕹️</span>
-                    <span class="text-sm">俄羅斯方塊小遊戲</span>
-                    <span class="text-[10px] text-amber-700 font-normal mt-1 underline">點擊前往預覽</span>
+                <a href="https://0804aiclasstest-production.up.railway.app/" target="_blank" class="project-card" style="text-decoration: none; color: inherit;">
+                    <h3>線上籤運網頁</h3>
+                    <p>點擊體驗線上抽籤與運勢測驗</p>
                 </a>
             </div>
         </section>
 
-        <!-- 頁尾 -->
-        <footer class="text-center text-xs text-stone-500 py-6 border-t border-amber-200/50">
-            © 2026 黃楚昀 (Thuly) · 個人履歷與作品集網站
+        <!-- Contact Info -->
+        <section id="contact">
+            <h2>聯絡方式</h2>
+            <ul class="contact-list">
+                <li><strong>手機：</strong><a href="tel:0981191717">0981-191-717</a></li>
+                <li><strong>Email：</strong><a href="mailto:win880623@gmail.com">win880623@gmail.com</a></li>
+                <li><strong>求職地區：</strong>新竹市</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 黃楚昀 (Thuly) - 個人介紹頁面</p>
         </footer>
-
-    </main>
+    </div>
 
 </body>
 </html>
