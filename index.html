@@ -447,7 +447,7 @@
 <body>
 
     <!-- Left Floating Action Button -->
-    <a href="#about" class="left-fab" title="返回頂端或關於我">
+    <a href="#about" class="left-fab" id="scrollTopBtn" title="返回頂端或關於我">
         <span>↑</span>
         <div class="fab-tooltip">回到頂端</div>
     </a>
@@ -597,18 +597,34 @@
         <!-- Projects -->
         <section id="projects">
             <h2>作品</h2>
-            <div class="projects-grid">
-                <a href="https://win880623-droid.github.io/portfolio/tetris.html" target="_blank" class="project-card">
-                    <h3>俄羅斯方塊小遊戲</h3>
-                    <p>點擊體驗經典益智遊戲實作</p>
+            <div class="projects-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <a href="https://win880623-droid.github.io/portfolio/tetris.html" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
+                        <canvas id="tetrisCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
+                    </div>
+                    <h3 style="font-size: 14px; margin-bottom: 4px;">俄羅斯方塊小遊戲</h3>
+                    <p style="font-size: 12px;">點擊體驗經典益智遊戲實作</p>
                 </a>
-                <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="project-card">
-                    <h3>excel快捷鍵小工具</h3>
-                    <p>點擊體驗實用的快捷鍵學習工具</p>
+                <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
+                        <canvas id="excelCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
+                    </div>
+                    <h3 style="font-size: 14px; margin-bottom: 4px;">excel快捷鍵小工具</h3>
+                    <p style="font-size: 12px;">點擊體驗實用的快捷鍵學習工具</p>
                 </a>
-                <a href="https://0804aiclasstest-production.up.railway.app/" target="_blank" class="project-card">
-                    <h3>線上籤運網頁</h3>
-                    <p>點擊體驗線上抽籤與運勢測驗</p>
+                <a href="https://0804aiclasstest-production.up.railway.app/" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
+                        <canvas id="fortuneCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
+                    </div>
+                    <h3 style="font-size: 14px; margin-bottom: 4px;">線上籤運網頁</h3>
+                    <p style="font-size: 12px;">點擊體驗線上抽籤與運勢測驗</p>
+                </a>
+                <a href="https://win880623-droid.github.io/portfolio/kanban.html" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+                    <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
+                        <canvas id="kanbanCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
+                    </div>
+                    <h3 style="font-size: 14px; margin-bottom: 4px;">Kanban任務版</h3>
+                    <p style="font-size: 12px;">使用Canvas互動製作</p>
                 </a>
             </div>
         </section>
@@ -637,6 +653,99 @@
     </div>
 
     <script>
+        // Smooth scroll to top functionality for floating action button
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
+            if (scrollTopBtn) {
+                scrollTopBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
+
+        // Draw Project Previews on Canvas
+        window.addEventListener('DOMContentLoaded', () => {
+            // Tetris Preview
+            const tetrisCanvas = document.getElementById('tetrisCanvas');
+            if (tetrisCanvas) {
+                const ctx = tetrisCanvas.getContext('2d');
+                ctx.fillStyle = '#f3e9db';
+                ctx.fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
+                // Draw mock blocks
+                ctx.fillStyle = '#9e6d3d';
+                ctx.fillRect(70, 20, 20, 20);
+                ctx.fillRect(90, 20, 20, 20);
+                ctx.fillStyle = '#d4cec7';
+                ctx.fillRect(90, 40, 20, 20);
+                ctx.fillRect(110, 40, 20, 20);
+            }
+
+            // Excel Tool Preview
+            const excelCanvas = document.getElementById('excelCanvas');
+            if (excelCanvas) {
+                const ctx = excelCanvas.getContext('2d');
+                ctx.fillStyle = '#f3e9db';
+                ctx.fillRect(0, 0, excelCanvas.width, excelCanvas.height);
+                // Draw grid lines
+                ctx.strokeStyle = '#d4cec7';
+                ctx.lineWidth = 1;
+                for(let i=20; i<200; i+=30) {
+                    ctx.beginPath(); ctx.moveTo(i, 10); ctx.lineTo(i, 80); ctx.stroke();
+                }
+                for(let j=20; j<90; j+=20) {
+                    ctx.beginPath(); ctx.moveTo(10, j); ctx.lineTo(190, j); ctx.stroke();
+                }
+                ctx.fillStyle = '#9e6d3d';
+                ctx.fillRect(13, 13, 28, 18);
+            }
+
+            // Fortune Telling Preview
+            const fortuneCanvas = document.getElementById('fortuneCanvas');
+            if (fortuneCanvas) {
+                const ctx = fortuneCanvas.getContext('2d');
+                ctx.fillStyle = '#f3e9db';
+                ctx.fillRect(0, 0, fortuneCanvas.width, fortuneCanvas.height);
+                // Draw fortune stick container mockup
+                ctx.fillStyle = '#9e6d3d';
+                ctx.beginPath();
+                ctx.roundRect ? ctx.roundRect(80, 15, 40, 60, 6) : ctx.rect(80, 15, 40, 60);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(92, 5, 4, 25);
+            }
+
+            // Kanban Preview
+            const canvas = document.getElementById('kanbanCanvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#f3e9db';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw 3 columns
+                ctx.fillStyle = '#ffffff';
+                ctx.roundRect ? ctx.roundRect(10, 10, 55, 70, 4) : ctx.fillRect(10, 10, 55, 70);
+                ctx.roundRect ? ctx.roundRect(72, 10, 55, 70, 4) : ctx.fillRect(72, 10, 55, 70);
+                ctx.roundRect ? ctx.roundRect(134, 10, 55, 70, 4) : ctx.fillRect(134, 10, 55, 70);
+                ctx.fill();
+
+                // Draw mock task cards
+                ctx.fillStyle = '#9e6d3d';
+                ctx.fillRect(16, 18, 43, 14);
+                ctx.fillRect(16, 36, 43, 14);
+
+                ctx.fillStyle = '#d4cec7';
+                ctx.fillRect(78, 18, 43, 20);
+
+                ctx.fillStyle = '#4d4a47';
+                ctx.fillRect(140, 18, 43, 14);
+                ctx.fillRect(140, 36, 43, 25);
+            }
+        });
+
         function copyText(text, btn) {
             const textarea = document.createElement('textarea');
             textarea.value = text;
