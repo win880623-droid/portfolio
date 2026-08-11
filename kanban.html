@@ -463,6 +463,8 @@
             } catch (e) {
                 console.error('無法儲存至 LocalStorage', e);
             }
+            // 每當任務更新時，自動重新對焦到目前最舊未完成任務的月份
+            initCalendarDate();
             renderBoard();
             renderCalendarCanvas();
             setDefaultDates();
