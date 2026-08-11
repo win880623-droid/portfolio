@@ -616,8 +616,16 @@
         <section id="contact">
             <h2>聯絡方式</h2>
             <ul class="contact-list">
-                <li><strong>手機：</strong><a href="tel:0981191717">0981-191-717</a></li>
-                <li><strong>Email：</strong><a href="mailto:win880623@gmail.com">win880623@gmail.com</a></li>
+                <li>
+                    <strong>手機：</strong>
+                    <span id="phone-text">0981-191-717</span>
+                    <button onclick="copyText('0981-191-717', this)" style="margin-left: 8px; padding: 2px 8px; font-size: 12px; background-color: var(--accent-light); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">複製</button>
+                </li>
+                <li>
+                    <strong>Email：</strong>
+                    <span id="email-text">win880623@gmail.com</span>
+                    <button onclick="copyText('win880623@gmail.com', this)" style="margin-left: 8px; padding: 2px 8px; font-size: 12px; background-color: var(--accent-light); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">複製</button>
+                </li>
                 <li><strong>求職地區：</strong>新竹市</li>
             </ul>
         </section>
@@ -627,5 +635,29 @@
         </footer>
     </div>
 
+    <script>
+        // 複製文字功能函數
+        function copyText(text, btn) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const originalText = btn.innerText;
+                btn.innerText = '已複製!';
+                btn.style.backgroundColor = 'var(--accent)';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.backgroundColor = 'var(--accent-light)';
+                    btn.style.color = 'var(--accent)';
+                }, 1500);
+            } catch (err) {
+                console.error('複製失敗', err);
+            }
+            document.body.removeChild(textarea);
+        }
+    </script>
 </body>
 </html>
