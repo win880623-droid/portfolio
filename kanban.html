@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人化 Kanban 任務板與時程甘特圖</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Shippori+Mincho:wght@600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f5f3ee;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #2c2c2c;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 2.2rem;
+            color: #3a3a3a;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1080px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .kanban-board {
+            display: flex;
+            gap: 24px;
+            width: 100%;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .column {
+            background-color: #edeae3;
+            border-radius: 6px;
+            width: 320px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding: 0 4px;
+        }
+
+        .column-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        .counter {
+            font-size: 0.85rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .column.todo .counter { background-color: #8da3b8; }
+        .column.doing .counter { background-color: #d4a017; }
+        .column.done .counter { background-color: #8f9e8b; }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 120px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-content {
+            font-size: 0.95rem;
+            word-break: break-all;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .card-dates {
+            font-size: 0.75rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            border-top: 1px solid #f0edf4;
+            padding-top: 8px;
+        }
+
+        .card-actions button {
+            background: #f0ede6;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            font-family: 'Noto Sans TC', sans-serif;
+            cursor: pointer;
+            color: #555;
+            transition: background 0.15s;
+        }
+
+        .card-actions button:hover:not(:disabled) {
+            background: #e2ded5;
+            color: #111;
+        }
+
+        .card-actions button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .card-actions button.delete-btn {
+            color: #d9534f;
+        }
+
+        .card-actions button.delete-btn:hover {
+            background: #fde8e8;
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid #e2ddd5;
+        }
+
+        .task-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dcd6ce;
+            border-radius: 6px;
+            background: #fff;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .task-input:focus {
+            border-color: #e67e22;
+        }
+
+        .date-inputs-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .date-inputs-row input[type="date"] {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #dcd6ce;
+            border-radius: 6px;
+            background: #fff;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .date-inputs-row input[type="date"]:focus {
+            border-color: #e67e22;
+        }
+
+        .date-label {
+            font-size: 0.75rem;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .add-btn {
+            background: #5c554e;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            text-align: center;
+        }
+
+        .add-btn:hover {
+            background: #443e38;
+        }
+
+        .empty-placeholder {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            padding: 20px 0;
+            font-style: italic;
+        }
+
+        .calendar-section {
+            background-color: #edeae3;
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .calendar-nav button {
+            background: #dfdad1;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #444;
+            transition: background 0.15s;
+        }
+
+        .calendar-nav button:hover {
+            background: #d0c9bc;
+        }
+
+        .calendar-nav span {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #444;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .canvas-container {
+            width: 100%;
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>個人化 Kanban 任務板</h1>
+        <p class="subtitle">任務管理工具</p>
+    </header>
+
+    <div class="container">
+        <div class="kanban-board">
+            <!-- 待辦欄位 -->
+            <div class="column todo" data-column="todo">
+                <div class="column-header">
+                    <span class="column-title">待辦</span>
+                    <span class="counter" id="counter-todo">0</span>
+                </div>
+                <div class="task-list" id="list-todo"></div>
+                <div class="input-area">
+                    <input type="text" class="task-input" id="input-todo" placeholder="新增待辦任務..." onkeydown="handleKeyPress(event, 'todo')">
+                    <div class="date-inputs-row">
+                        <span class="date-label">起</span>
+                        <input type="date" id="start-todo">
+                        <span class="date-label">迄</span>
+                        <input type="date" id="end-todo">
+                    </div>
+                    <button class="add-btn" onclick="addTask('todo')">新增任務</button>
+                </div>
+            </div>
+
+            <!-- 進行中欄位 -->
+            <div class="column doing" data-column="doing">
+                <div class="column-header">
+                    <span class="column-title">進行中</span>
+                    <span class="counter" id="counter-doing">0</span>
+                </div>
+                <div class="task-list" id="list-doing"></div>
+                <div class="input-area">
+                    <input type="text" class="task-input" id="input-doing" placeholder="新增進行中任務..." onkeydown="handleKeyPress(event, 'doing')">
+                    <div class="date-inputs-row">
+                        <span class="date-label">起</span>
+                        <input type="date" id="start-doing">
+                        <span class="date-label">迄</span>
+                        <input type="date" id="end-doing">
+                    </div>
+                    <button class="add-btn" onclick="addTask('doing')">新增任務</button>
+                </div>
+            </div>
+
+            <!-- 完成欄位 -->
+            <div class="column done" data-column="done">
+                <div class="column-header">
+                    <span class="column-title">完成</span>
+                    <span class="counter" id="counter-done">0</span>
+                </div>
+                <div class="task-list" id="list-done"></div>
+                <div class="input-area">
+                    <input type="text" class="task-input" id="input-done" placeholder="新增完成任務..." onkeydown="handleKeyPress(event, 'done')">
+                    <div class="date-inputs-row">
+                        <span class="date-label">起</span>
+                        <input type="date" id="start-done">
+                        <span class="date-label">迄</span>
+                        <input type="date" id="end-done">
+                    </div>
+                    <button class="add-btn" onclick="addTask('done')">新增任務</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <span class="calendar-title">日曆表</span>
+                <div class="calendar-nav">
+                    <button onclick="changeMonth(-1)">上一月</button>
+                    <span id="calendar-month-label">2026年 6月</span>
+                    <button onclick="changeMonth(1)">下一月</button>
+                </div>
+            </div>
+            <div class="canvas-container">
+                <canvas id="calendarCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COLUMNS = ['todo', 'doing', 'done'];
+        
+        let kanbanData = JSON.parse(localStorage.getItem('kanban_tasks_canvas_v1')) || {
+            todo: [
+                { text: '規劃個人專案', startDate: '2026-06-01', endDate: '2026-06-05' },
+                { text: '準備下週會議簡報', startDate: '2026-06-08', endDate: '2026-06-08' }
+            ],
+            doing: [
+                { text: '前端版面切版與樣式調整', startDate: '2026-06-03', endDate: '2026-06-12' }
+            ],
+            done: [
+                { text: '完成環境建置', startDate: '2026-06-01', endDate: '2026-06-02' }
+            ]
+        };
+
+        let currentCalendarDate = new Date(2026, 5, 1); // 預設 2026 年 6 月
+
+        function setDefaultDates() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const todayStr = today.toISOString().split('T')[0];
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            COLUMNS.forEach(colKey => {
+                const startInput = document.getElementById(`start-${colKey}`);
+                const endInput = document.getElementById(`end-${colKey}`);
+                if (startInput) startInput.value = todayStr;
+                if (endInput) endInput.value = tomorrowStr;
+            });
+        }
+
+        function saveAndRender() {
+            try {
+                localStorage.setItem('kanban_tasks_canvas_v1', JSON.stringify(kanbanData));
+            } catch (e) {
+                console.error('無法儲存至 LocalStorage', e);
+            }
+            renderBoard();
+            renderCalendarCanvas();
+            setDefaultDates();
+        }
+
+        function renderBoard() {
+            COLUMNS.forEach((colKey, colIndex) => {
+                const listEl = document.getElementById(`list-${colKey}`);
+                const counterEl = document.getElementById(`counter-${colKey}`);
+                const tasks = kanbanData[colKey];
+
+                counterEl.textContent = tasks.length;
+                listEl.innerHTML = '';
+
+                if (tasks.length === 0) {
+                    listEl.innerHTML = `<div class="empty-placeholder">目前沒有任務</div>`;
+                    return;
+                }
+
+                tasks.forEach((taskObj, taskIndex) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    const canMoveLeft = colIndex > 0;
+                    const canMoveRight = colIndex < COLUMNS.length - 1;
+
+                    let dateStrDisplay = '';
+                    if (taskObj.startDate && taskObj.endDate) {
+                        if (taskObj.startDate === taskObj.endDate) {
+                            dateStrDisplay = `📅 ${taskObj.startDate}`;
+                        } else {
+                            dateStrDisplay = `📅 ${taskObj.startDate} ~ ${taskObj.endDate}`;
+                        }
+                    } else if (taskObj.startDate) {
+                        dateStrDisplay = `📅 起: ${taskObj.startDate}`;
+                    } else if (taskObj.endDate) {
+                        dateStrDisplay = `📅 迄: ${taskObj.endDate}`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="card-content">${escapeHTML(taskObj.text)}</div>
+                        ${dateStrDisplay ? `<div class="card-dates">${dateStrDisplay}</div>` : ''}
+                        <div class="card-actions">
+                            <button ${!canMoveLeft ? 'disabled' : ''} onclick="moveTask('${colKey}', ${taskIndex}, -1)">向左移</button>
+                            <button ${!canMoveRight ? 'disabled' : ''} onclick="moveTask('${colKey}', ${taskIndex}, 1)">向右移</button>
+                            <button class="delete-btn" onclick="deleteTask('${colKey}', ${taskIndex})">刪除</button>
+                        </div>
+                    `;
+                    listEl.appendChild(card);
+                });
+            });
+        }
+
+        function addTask(colKey) {
+            const inputEl = document.getElementById(`input-${colKey}`);
+            const startEl = document.getElementById(`start-${colKey}`);
+            const endEl = document.getElementById(`end-${colKey}`);
+
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            let startDate = startEl.value;
+            let endDate = endEl.value;
+
+            if (startDate && !endDate) endDate = startDate;
+            if (!startDate && endDate) startDate = endDate;
+
+            kanbanData[colKey].push({
+                text: text,
+                startDate: startDate || '',
+                endDate: endDate || ''
+            });
+
+            inputEl.value = '';
+            
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            startEl.value = today.toISOString().split('T')[0];
+            endEl.value = tomorrow.toISOString().split('T')[0];
+
+            saveAndRender();
+        }
+
+        function handleKeyPress(event, colKey) {
+            if (event.key === 'Enter') {
+                addTask(colKey);
+            }
+        }
+
+        function deleteTask(colKey, taskIndex) {
+            kanbanData[colKey].splice(taskIndex, 1);
+            saveAndRender();
+        }
+
+        function moveTask(currentColKey, taskIndex, direction) {
+            const currentIdx = COLUMNS.indexOf(currentColKey);
+            const targetIdx = currentIdx + direction;
+
+            if (targetIdx < 0 || targetIdx >= COLUMNS.length) return;
+
+            const targetColKey = COLUMNS[targetIdx];
+            const [movedTask] = kanbanData[currentColKey].splice(taskIndex, 1);
+            kanbanData[targetColKey].push(movedTask);
+
+            saveAndRender();
+        }
+
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            renderCalendarCanvas();
+        }
+
+        function renderCalendarCanvas() {
+            const canvas = document.getElementById('calendarCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+
+            document.getElementById('calendar-month-label').textContent = `${year}年 ${month + 1}月`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let gridCells = [];
+
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = prevMonthDays - i;
+                const prevMonth = month === 0 ? 12 : month;
+                const prevYear = month === 0 ? year - 1 : year;
+                const dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                gridCells.push({ dayNum, dateStr, isOtherMonth: true });
+            }
+
+            for (let day = 1; day <= totalDaysInMonth; day++) {
+                const monthStr = String(month + 1).padStart(2, '0');
+                const dayStr = String(day).padStart(2, '0');
+                const dateStr = `${year}-${monthStr}-${dayStr}`;
+                gridCells.push({ dayNum: day, dateStr, isOtherMonth: false });
+            }
+
+            const totalCellsSoFar = gridCells.length;
+            const remainingCells = (7 - (totalCellsSoFar % 7)) % 7;
+            for (let i = 1; i <= remainingCells; i++) {
+                const nextMonth = month === 11 ? 1 : month + 2;
+                const nextYear = month === 11 ? year + 1 : year;
+                const dateStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                gridCells.push({ dayNum: i, dateStr, isOtherMonth: true });
+            }
+
+            const totalWeeks = gridCells.length / 7;
+
+            let activeTasks = [];
+            ['todo', 'doing'].forEach(colKey => {
+                kanbanData[colKey].forEach(task => {
+                    if (!task.startDate && !task.endDate) return;
+                    activeTasks.push({
+                        text: task.text,
+                        status: colKey,
+                        startDate: task.startDate || task.endDate,
+                        endDate: task.endDate || task.startDate
+                    });
+                });
+            });
+
+            const rowHeight = 32;
+            const headerHeight = 30;
+            const cellTopPadding = 26;
+            
+            let weekLanes = [];
+            for (let w = 0; w < totalWeeks; w++) {
+                let weekCells = gridCells.slice(w * 7, (w + 1) * 7);
+                let weekStartDate = weekCells[0].dateStr;
+                let weekEndDate = weekCells[6].dateStr;
+
+                let thisWeekTasks = activeTasks.filter(t => {
+                    return t.endDate >= weekStartDate && t.startDate <= weekEndDate;
+                });
+
+                let laneTracker = [0, 0, 0, 0, 0, 0, 0];
+                let assignedTasks = thisWeekTasks.map(task => {
+                    let sIdx = weekCells.findIndex(c => c.dateStr === task.startDate);
+                    let eIdx = weekCells.findIndex(c => c.dateStr === task.endDate);
+                    let rStart = Math.max(0, sIdx < 0 ? 0 : sIdx);
+                    let rEnd = Math.min(6, eIdx < 0 ? 6 : eIdx);
+
+                    let chosenLane = 0;
+                    for (let l = 0; l < 10; l++) {
+                        let available = true;
+                        for (let d = rStart; d <= rEnd; d++) {
+                            if (laneTracker[d] & (1 << l)) {
+                                available = false;
+                                break;
+                            }
+                        }
+                        if (available) {
+                            chosenLane = l;
+                            for (let d = rStart; d <= rEnd; d++) {
+                                laneTracker[d] |= (1 << l);
+                            }
+                            break;
+                        }
+                    }
+                    return { task, rStart, rEnd, lane: chosenLane };
+                });
+
+                let maxLane = assignedTasks.reduce((max, at) => Math.max(max, at.lane), -1);
+                let weekHeight = Math.max(1, maxLane + 1) * rowHeight + cellTopPadding + 8;
+                weekLanes.push({ assignedTasks, weekHeight });
+            }
+
+            let totalHeight = headerHeight;
+            let weekOffsets = [headerHeight];
+            for (let w = 0; w < totalWeeks; w++) {
+                totalHeight += weekLanes[w].weekHeight;
+                weekOffsets.push(totalHeight);
+            }
+
+            const dpr = window.devicePixelRatio || 1;
+            const displayWidth = canvas.parentElement.clientWidth || 1000;
+            canvas.width = displayWidth * dpr;
+            canvas.height = totalHeight * dpr;
+            ctx.scale(dpr, dpr);
+
+            canvas.style.width = displayWidth + 'px';
+            canvas.style.height = totalHeight + 'px';
+
+            ctx.clearRect(0, 0, displayWidth, totalHeight);
+
+            // 繪製星期表頭
+            ctx.fillStyle = '#f0ede6';
+            ctx.fillRect(0, 0, displayWidth, headerHeight);
+            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            const colWidth = displayWidth / 7;
+
+            ctx.fillStyle = '#666';
+            ctx.font = '700 12px "Noto Sans TC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (let i = 0; i < 7; i++) {
+                ctx.fillText(dayNames[i], i * colWidth + colWidth / 2, headerHeight / 2);
+            }
+
+            // 繪製每週格子與任務條
+            for (let w = 0; w < totalWeeks; w++) {
+                let weekY = weekOffsets[w];
+                let weekH = weekLanes[w].weekHeight;
+                let weekCells = gridCells.slice(w * 7, (w + 1) * 7);
+
+                for (let i = 0; i < 7; i++) {
+                    let cellX = i * colWidth;
+                    let cellData = weekCells[i];
+
+                    ctx.fillStyle = cellData.isOtherMonth ? '#f9f8f5' : '#ffffff';
+                    ctx.fillRect(cellX + 2, weekY + 2, colWidth - 4, weekH - 4);
+
+                    if (cellData.dateStr === todayStr) {
+                        ctx.strokeStyle = '#e67e22';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(cellX + 2, weekY + 2, colWidth - 4, weekH - 4);
+                    }
+
+                    ctx.fillStyle = cellData.isOtherMonth ? '#b5b0a6' : '#555';
+                    ctx.font = '700 11px "Noto Sans TC", sans-serif';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(cellData.dayNum, cellX + colWidth - 8, weekY + 6);
+                }
+
+                weekLanes[w].assignedTasks.forEach(({ task, rStart, rEnd, lane }) => {
+                    let barX = rStart * colWidth + 4;
+                    let barW = (rEnd - rStart + 1) * colWidth - 8;
+                    let barY = weekY + cellTopPadding + lane * rowHeight;
+                    let barH = 24;
+
+                    let bgColor = '#8da3b8';
+                    if (task.status === 'doing') bgColor = '#d4a017';
+                    
+                    ctx.fillStyle = bgColor;
+                    roundRect(ctx, barX, barY, barW, barH, 4);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '500 11px "Noto Sans TC", sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(barX + 6, barY, barW - 12, barH);
+                    ctx.clip();
+
+                    ctx.fillText(task.text, barX + 6, barY + barH / 2);
+                    ctx.restore();
+                });
+            }
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            if (width < 2 * radius) radius = width / 2;
+            if (height < 2 * radius) radius = height / 2;
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.arcTo(x + width, y, x + width, y + height, radius);
+            ctx.arcTo(x + width, y + height, x, y + height, radius);
+            ctx.arcTo(x, y + height, x, y, radius);
+            ctx.arcTo(x, y, x + width, y, radius);
+            ctx.closePath();
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setDefaultDates();
+            renderBoard();
+            renderCalendarCanvas();
+        });
+
+        window.addEventListener('resize', () => {
+            renderCalendarCanvas();
+        });
+    </script>
+</body>
+</html>
