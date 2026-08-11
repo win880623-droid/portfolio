@@ -257,6 +257,31 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             transition: all 0.2s ease;
+            position: relative;
+            overflow: visible;
+        }
+
+        /* 迷你的小圖片 (滑鼠經過時由下而上跳出，底部切齊框線右上邊緣) */
+        .skill-card::after, .project-card::after, .cert-item::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            bottom: 0;
+            width: 32px;
+            height: 32px;
+            background-image: url('https://win880623-droid.github.io/portfolio/jump.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .skill-card:hover::after, .project-card:hover::after, .cert-item:hover::after {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .skill-card {
