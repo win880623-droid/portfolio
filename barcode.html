@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員卡與載具 Canvas 管理器</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome 圖示庫 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Cropper.js (圖片裁切) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+  <!-- Barcode & QR Code 條碼生成庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+  <!-- ZXing 條碼解碼庫 (自動辨識圖片條碼) -->
+  <script src="https://unpkg.com/@zxing/library@0.21.2/umd/index.min.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      background-color: #f8fafc;
+    }
+    .card-canvas-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1.586 / 1; /* 標準黃金卡片比例 */
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-canvas-container:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.15);
+    }
+    .card-canvas-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .modal-overlay {
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    .hidden-modal {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
+    .active-modal {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    /* 優化 Cropper.js 裁切框與觸控拖曳控制點，提升自由框選與黃金比例模式拖曳體驗 */
+    .cropper-view-box {
+      outline: 2px solid #2563eb !important;
+      outline-color: rgba(37, 99, 235, 0.85) !important;
+    }
+    .cropper-line {
+      background-color: #2563eb !important;
+    }
+    .cropper-point {
+      background-color: #2563eb !important;
+      width: 12px !important;
+      height: 12px !important;
+      opacity: 0.95 !important;
+      border-radius: 50% !important;
+      border: 2px solid #ffffff !important;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+    }
+    .cropper-point.point-e, .cropper-point.point-w {
+      margin-top: -5px !important;
+      width: 10px !important;
+      height: 16px !important;
+      border-radius: 4px !important;
+    }
+    .cropper-point.point-n, .cropper-point.point-s {
+      margin-left: -5px !important;
+      width: 16px !important;
+      height: 10px !important;
+      border-radius: 4px !important;
+    }
+    .cropper-point.point-ne, .cropper-point.point-nw, .cropper-point.point-se, .cropper-point.point-sw {
+      width: 14px !important;
+      height: 14px !important;
+    }
+  </style>
+</head>
+<body class="text-slate-700 min-h-screen pb-12">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-800 leading-tight">會員卡與載具卡包</h1>
+          <p class="text-xs text-slate-500">Canvas 智慧管理與雙條碼獨立感應</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
+          <i class="fa-solid fa-plus"></i>
+          <span class="hidden sm:inline">新增卡片</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- 搜尋與過濾列 -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
+      <div class="relative flex-1">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" id="searchInput" placeholder="搜尋卡片名稱、號碼或持有人..." class="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 md:w-auto">
+        <select id="ownerFilter" class="px-2.5 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          <option value="">所有持有人</option>
+        </select>
+        <select id="categoryFilter" class="px-2.5 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          <option value="">所有種類標籤</option>
+        </select>
+        <select id="expiryFilter" class="px-2.5 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          <option value="">所有效期狀態</option>
+          <option value="valid">有效中 (含無期限)</option>
+          <option value="warning">即將到期 (30天內)</option>
+          <option value="expired">已過期</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 卡片展示網格 -->
+    <div id="cardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- 動態繪製卡片於此 -->
+    </div>
+  </main>
+
+  <!-- 新增/編輯卡片 Modal -->
+  <div id="addModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b pb-3 sticky top-0 bg-white z-10">
+        <h3 id="modalTitle" class="text-lg font-bold text-slate-800"><i class="fa-solid fa-credit-card text-blue-600 mr-2"></i>新增會員卡 / 載具</h3>
+        <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="cardForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">卡片/店家名稱 *</label>
+          <input type="text" id="title" list="titleList" placeholder="如：全聯福利卡、好市多會員卡" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <datalist id="titleList"></datalist>
+        </div>
+
+        <!-- 一維與二維條碼文字輸入區 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">
+              <i class="fa-solid fa-barcode text-blue-500 mr-1"></i>一維條碼號碼
+            </label>
+            <input type="text" id="code1D" placeholder="如：PX123456789 (選填)" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">
+              <i class="fa-solid fa-qrcode text-blue-500 mr-1"></i>二維碼號碼 (QR)
+            </label>
+            <input type="text" id="code2D" placeholder="如：/AB12345 (選填)" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">持有人 (自訂人名) *</label>
+            <input type="text" id="owner" list="ownerList" placeholder="如：蛋、媽媽" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <datalist id="ownerList"></datalist>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">分類標籤 *</label>
+            <input type="text" id="category" list="categoryList" placeholder="如：電子發票、超市" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <datalist id="categoryList"></datalist>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">到期期限 / 有效日期</label>
+            <input type="date" id="expiryDate" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">卡片主題純色</label>
+            <div class="flex items-center gap-2">
+              <input type="color" id="cardColor" value="#2563eb" class="h-9 w-12 rounded cursor-pointer border p-0.5">
+              <span class="text-xs text-slate-500">（無底圖時使用）</span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 my-2">
+
+        <!-- 獨立分開上傳 1D 一維條碼 與 2D QR Code 圖片區域 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-800 mb-2">
+            <i class="fa-solid fa-images text-blue-600 mr-1.5"></i>上傳條碼實體圖片（同張卡片可分開上傳兩張）
+          </label>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- 區塊 1：一維條碼圖片上傳 -->
+            <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/80 hover:bg-slate-50 transition">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <i class="fa-solid fa-barcode text-blue-600"></i> 一維條碼圖片
+                </span>
+              </div>
+
+              <!-- 上傳按鈕組 1D -->
+              <div id="dropZone1D" class="border-2 border-dashed border-slate-300 rounded-lg p-2.5 text-center bg-white cursor-pointer hover:border-blue-400 transition">
+                <input type="file" id="imageInput1D" accept="image/*" class="hidden">
+                <input type="file" id="cameraInput1D" accept="image/*" capture="environment" class="hidden">
+                
+                <p class="text-[11px] text-slate-500 mb-1.5">上傳/拍照一維條碼正面圖</p>
+                <div class="flex justify-center gap-1.5">
+                  <button type="button" onclick="event.stopPropagation(); document.getElementById('imageInput1D').click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1">
+                    <i class="fa-solid fa-folder-open text-blue-500"></i> 選擇
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); document.getElementById('cameraInput1D').click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1">
+                    <i class="fa-solid fa-camera text-emerald-500"></i> 拍照
+                  </button>
+                </div>
+              </div>
+
+              <!-- 預覽區 1D -->
+              <div id="imagePreviewContainer1D" class="hidden relative rounded-lg border border-slate-200 overflow-hidden bg-slate-900 h-24 flex items-center justify-center mt-2">
+                <img id="imagePreview1D" src="" class="max-h-full max-w-full object-contain">
+                <div class="absolute top-1 right-1 flex items-center gap-1">
+                  <button type="button" onclick="reCropExistingImage('1D')" class="bg-slate-900/80 text-white rounded-full p-1 text-[10px] hover:bg-blue-600 transition" title="重新裁切/旋轉圖片">
+                    <i class="fa-solid fa-crop w-3.5 h-3.5 flex items-center justify-center"></i>
+                  </button>
+                  <button type="button" onclick="clearImagePreview('1D')" class="bg-slate-900/80 text-white rounded-full p-1 text-[10px] hover:bg-rose-600 transition" title="刪除圖片">
+                    <i class="fa-solid fa-xmark w-3.5 h-3.5 flex items-center justify-center"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 區塊 2：二維碼 (QR Code) 圖片上傳 -->
+            <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/80 hover:bg-slate-50 transition">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <i class="fa-solid fa-qrcode text-emerald-600"></i> 二維碼 (QR) 圖片
+                </span>
+              </div>
+
+              <!-- 上傳按鈕組 2D -->
+              <div id="dropZone2D" class="border-2 border-dashed border-slate-300 rounded-lg p-2.5 text-center bg-white cursor-pointer hover:border-emerald-400 transition">
+                <input type="file" id="imageInput2D" accept="image/*" class="hidden">
+                <input type="file" id="cameraInput2D" accept="image/*" capture="environment" class="hidden">
+                
+                <p class="text-[11px] text-slate-500 mb-1.5">上傳/拍照 QR Code 截圖</p>
+                <div class="flex justify-center gap-1.5">
+                  <button type="button" onclick="event.stopPropagation(); document.getElementById('imageInput2D').click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1">
+                    <i class="fa-solid fa-folder-open text-blue-500"></i> 選擇
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); document.getElementById('cameraInput2D').click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1">
+                    <i class="fa-solid fa-camera text-emerald-500"></i> 拍照
+                  </button>
+                </div>
+              </div>
+
+              <!-- 預覽區 2D -->
+              <div id="imagePreviewContainer2D" class="hidden relative rounded-lg border border-slate-200 overflow-hidden bg-slate-900 h-24 flex items-center justify-center mt-2">
+                <img id="imagePreview2D" src="" class="max-h-full max-w-full object-contain">
+                <div class="absolute top-1 right-1 flex items-center gap-1">
+                  <button type="button" onclick="reCropExistingImage('2D')" class="bg-slate-900/80 text-white rounded-full p-1 text-[10px] hover:bg-emerald-600 transition" title="重新裁切/旋轉圖片">
+                    <i class="fa-solid fa-crop w-3.5 h-3.5 flex items-center justify-center"></i>
+                  </button>
+                  <button type="button" onclick="clearImagePreview('2D')" class="bg-slate-900/80 text-white rounded-full p-1 text-[10px] hover:bg-rose-600 transition" title="刪除圖片">
+                    <i class="fa-solid fa-xmark w-3.5 h-3.5 flex items-center justify-center"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submitCardBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition mt-3 shadow">
+          合成並繪製卡片
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 滿版掃描 Modal (Canvas 高清放大) -->
+  <div id="scanModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl text-center relative">
+      <button onclick="closeScanModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 text-2xl">
+        <i class="fa-solid fa-circle-xmark"></i>
+      </button>
+
+      <h3 id="scanTitle" class="text-2xl font-bold text-slate-800 mb-1">卡片名稱</h3>
+      <p id="scanMeta" class="text-xs text-slate-500 mb-3"></p>
+
+      <!-- 快速切換一維條碼 / QR Code 頁籤 -->
+      <div id="scanBarcodeToggleGroup" class="flex justify-center items-center gap-2 mb-4 bg-slate-100 p-1.5 rounded-2xl w-fit mx-auto border border-slate-200">
+        <button id="scanBtn1D" type="button" onclick="switchScanBarcodeType('CODE128')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-barcode"></i> 一維條碼
+        </button>
+        <button id="scanBtnQR" type="button" onclick="switchScanBarcodeType('QR')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-qrcode"></i> 二維碼 (QR)
+        </button>
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-inner mb-4 flex justify-center">
+        <canvas id="scanCanvas" width="600" height="378" class="w-full h-auto rounded-xl max-h-[60vh] object-contain"></canvas>
+      </div>
+
+      <div class="text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl py-2 px-3 text-xs font-semibold flex items-center justify-center gap-2">
+        <i class="fa-solid fa-bolt"></i> 已提升螢幕對比度，請直接出示給店員掃描
+      </div>
+    </div>
+  </div>
+
+  <!-- 圖片手動裁切 Modal -->
+  <div id="cropModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl flex flex-col gap-4 max-h-[90vh]">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-crop text-blue-600"></i> 調整圖片區域 (自動適配與留白)
+        </h3>
+        <button onclick="closeCropModal(false)" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <!-- 裁切模式選擇 -->
+      <div class="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+        <span class="font-semibold text-slate-700"><i class="fa-solid fa-sliders text-blue-500 mr-1"></i>裁切比例：</span>
+        <div class="flex items-center gap-3">
+          <label class="inline-flex items-center gap-1 cursor-pointer">
+            <input type="radio" name="cropAspect" value="fixed" checked onchange="toggleCropAspectRatio(true)" class="text-blue-600 focus:ring-blue-500">
+            <span class="text-slate-700 font-medium">黃金比例</span>
+          </label>
+          <label class="inline-flex items-center gap-1 cursor-pointer">
+            <input type="radio" name="cropAspect" value="free" onchange="toggleCropAspectRatio(false)" class="text-blue-600 focus:ring-blue-500">
+            <span class="text-slate-700 font-medium">自由框選</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="relative bg-slate-900 rounded-xl overflow-hidden h-[320px] w-full flex items-center justify-center p-2">
+        <img id="cropTargetImage" class="max-h-full max-w-full object-contain" src="" alt="裁切圖片目標">
+      </div>
+
+      <div class="flex items-center justify-between gap-3 pt-2">
+        <div class="flex gap-2">
+          <button type="button" onclick="rotateCropImage(-90)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left"></i> 左轉
+          </button>
+          <button type="button" onclick="rotateCropImage(90)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-rotate-right"></i> 右轉
+          </button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeCropModal(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold">
+            取消
+          </button>
+          <button type="button" onclick="confirmCrop()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow">
+            確認完成裁切
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 刪除確認 Modal -->
+  <div id="deleteModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl text-center space-y-4">
+      <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
+        <i class="fa-solid fa-trash-can"></i>
+      </div>
+      <div>
+        <h4 class="text-base font-bold text-slate-800">確定刪除此卡片？</h4>
+        <p class="text-xs text-slate-500 mt-1">此動作無法復原，請確認是否移除。</p>
+      </div>
+      <div class="flex justify-center gap-2 pt-2">
+        <button onclick="closeDeleteModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-xs font-semibold">
+          取消
+        </button>
+        <button onclick="confirmDeleteCard()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-xl text-xs font-bold">
+          確認刪除
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 預設卡片範例資料
+    const DEFAULT_CARDS = [
+      {
+        id: 1,
+        title: '全聯福利卡',
+        code1D: 'PX88889999001',
+        code2D: '',
+        activeBarcodeType: 'CODE128',
+        owner: '蛋',
+        category: '超市賣場',
+        expiryDate: '',
+        cardColor: '#2563eb',
+        bgImage1D: '',
+        bgImage2D: '',
+        rawImage1D: '',
+        rawImage2D: ''
+      },
+      {
+        id: 2,
+        title: '電子發票載具',
+        code1D: '/AB12345',
+        code2D: '',
+        activeBarcodeType: 'CODE128',
+        owner: '蛋',
+        category: '電子發票',
+        expiryDate: '',
+        cardColor: '#059669',
+        bgImage1D: '',
+        bgImage2D: '',
+        rawImage1D: '',
+        rawImage2D: ''
+      }
+    ];
+
+    // 安全的 LocalStorage 存取機制（防止 Sandboxed Blob iFrame 丟出 SecurityError 導致整體腳本中斷）
+    function loadSavedCards() {
+      try {
+        const saved = localStorage.getItem('canvas_cards_v3');
+        return saved ? JSON.parse(saved) : null;
+      } catch (err) {
+        console.warn('LocalStorage access is restricted or unavailable:', err);
+        return null;
+      }
+    }
+
+    function saveCardsToStorage(data) {
+      try {
+        localStorage.setItem('canvas_cards_v3', JSON.stringify(data));
+      } catch (err) {
+        console.warn('LocalStorage write failed:', err);
+      }
+    }
+
+    let cards = loadSavedCards();
+    if (!cards || !Array.isArray(cards)) {
+      cards = DEFAULT_CARDS;
+      saveCardsToStorage(cards);
+    }
+
+    // 相容性歸一化：轉譯舊版單圖/單條碼資料結構並過濾網址
+    function normalizeCard(c) {
+      if (c.code1D === undefined && c.code2D === undefined) {
+        if (c.barcodeType === 'QR') {
+          c.code2D = c.code || '';
+          c.code1D = '';
+        } else {
+          c.code1D = c.code || '';
+          c.code2D = '';
+        }
+      }
+
+      // 若卡號為網址則清除，不將網址誤當作卡號
+      if (c.code1D && (c.code1D.startsWith('http://') || c.code1D.startsWith('https://'))) {
+        c.code1D = '';
+      }
+      if (c.code2D && (c.code2D.startsWith('http://') || c.code2D.startsWith('https://'))) {
+        c.code2D = '';
+      }
+
+      // 圖片獨立相容補齊
+      if (c.bgImage1D === undefined) c.bgImage1D = c.bgImage || '';
+      if (c.bgImage2D === undefined) c.bgImage2D = '';
+      if (c.rawImage1D === undefined) c.rawImage1D = c.bgImage1D || c.bgImage || '';
+      if (c.rawImage2D === undefined) c.rawImage2D = c.bgImage2D || '';
+
+      if (!c.activeBarcodeType) {
+        c.activeBarcodeType = (c.code1D || c.bgImage1D) ? 'CODE128' : ((c.code2D || c.bgImage2D) ? 'QR' : 'CODE128');
+      }
+      return c;
+    }
+
+    cards = cards.map(normalizeCard);
+
+    // DOM 元素引用與全域變數
+    let cardGrid, cardForm, searchInput, ownerFilter, categoryFilter, expiryFilter;
+    let imagePreview1D, imagePreview2D, imagePreviewContainer1D, imagePreviewContainer2D;
+
+    let currentUploadedImageData1D = '';
+    let currentUploadedImageData2D = '';
+    let currentRawImageData1D = '';
+    let currentRawImageData2D = '';
+
+    let cropperInstance = null;
+    let onCropSuccessCallback = null;
+    let editingCardId = null;
+    let pendingDeleteId = null;
+    let currentScanCardId = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      cardGrid = document.getElementById('cardGrid');
+      cardForm = document.getElementById('cardForm');
+      searchInput = document.getElementById('searchInput');
+      ownerFilter = document.getElementById('ownerFilter');
+      categoryFilter = document.getElementById('categoryFilter');
+      expiryFilter = document.getElementById('expiryFilter');
+
+      imagePreview1D = document.getElementById('imagePreview1D');
+      imagePreview2D = document.getElementById('imagePreview2D');
+      imagePreviewContainer1D = document.getElementById('imagePreviewContainer1D');
+      imagePreviewContainer2D = document.getElementById('imagePreviewContainer2D');
+
+      if (cardForm) {
+        cardForm.addEventListener('submit', handleCardFormSubmit);
+      }
+
+      if (searchInput) searchInput.addEventListener('input', renderAllCards);
+      if (ownerFilter) ownerFilter.addEventListener('change', renderAllCards);
+      if (categoryFilter) categoryFilter.addEventListener('change', renderAllCards);
+      if (expiryFilter) expiryFilter.addEventListener('change', renderAllCards);
+
+      updateDropdowns();
+      renderAllCards();
+      setupImageUploadHandlers();
+
+      // 監聽視窗與裝置螢幕縮放，自動觸發重繪以維持最高畫質與正確比例
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          renderAllCards();
+          if (currentScanCardId) {
+            const scanCanvas = document.getElementById('scanCanvas');
+            const card = cards.find(c => c.id === currentScanCardId);
+            if (scanCanvas && card) drawCardCanvas(scanCanvas, card, true);
+          }
+        }, 150);
+      });
+    });
+
+    function setupImageUploadHandlers() {
+      const inputs = ['imageInput1D', 'cameraInput1D', 'imageInput2D', 'cameraInput2D'];
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('click', (e) => { e.target.value = ''; });
+          const targetType = id.includes('1D') ? 'CODE128' : 'QR';
+          const flowType = id.includes('1D') ? 'modal1D' : 'modal2D';
+          el.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+              triggerCropFlow(e.target.files[0], targetType, flowType);
+            }
+          });
+        }
+      });
+    }
+
+    function compressAndResizeImage(file, maxDimension = 1200) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("檔案讀取失敗"));
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onerror = () => reject(new Error("圖片載入失敗"));
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            resolve(canvas.toDataURL('image/jpeg', 0.88));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function triggerCropFlow(file, targetType = 'CODE128', flowType = 'modal1D') {
+      if (!file || !file.type.startsWith('image/')) return;
+
+      try {
+        showToast('⚡ 正在優化與載入圖片...');
+        const compressedDataUrl = await compressAndResizeImage(file, 1600);
+        
+        // 保存未裁切的原圖
+        if (targetType === 'QR') {
+          currentRawImageData2D = compressedDataUrl;
+        } else {
+          currentRawImageData1D = compressedDataUrl;
+        }
+
+        openCropModal(compressedDataUrl, (croppedDataUrl) => {
+          if (flowType === 'modal1D') {
+            handleCropResultForModal(croppedDataUrl, 'CODE128');
+          } else if (flowType === 'modal2D') {
+            handleCropResultForModal(croppedDataUrl, 'QR');
+          }
+        });
+      } catch (err) {
+        console.error('圖片處理失敗:', err);
+        showToast('❌ 圖片載入失敗，請嘗試選擇其他圖片');
+      }
+    }
+
+    function openCropModal(imageUrl, callback) {
+      onCropSuccessCallback = callback;
+      const targetImg = document.getElementById('cropTargetImage');
+      
+      const fixedRadio = document.querySelector('input[name="cropAspect"][value="fixed"]');
+      if (fixedRadio) fixedRadio.checked = true;
+
+      const cropModal = document.getElementById('cropModal');
+      cropModal.classList.remove('hidden-modal');
+      cropModal.classList.add('active-modal');
+
+      if (cropperInstance) {
+        cropperInstance.destroy();
+        cropperInstance = null;
+      }
+
+      targetImg.onload = null;
+      
+      setTimeout(() => {
+        targetImg.onload = () => {
+          if (cropperInstance) {
+            cropperInstance.destroy();
+          }
+          cropperInstance = new Cropper(targetImg, {
+            aspectRatio: 400 / 252,
+            viewMode: 1,
+            autoCropArea: 0.95,
+            responsive: true,
+            background: false,
+            checkOrientation: true,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            dragMode: 'none',
+            toggleDragModeOnDblclick: false,
+            center: true,
+            highlight: true,
+            guides: true
+          });
+        };
+        targetImg.src = imageUrl;
+      }, 50);
+    }
+
+    function toggleCropAspectRatio(isFixed) {
+      if (cropperInstance) {
+        // 切換為自由框選 (NaN) 或黃金比例 (400/252)，解鎖/鎖定所有方向拖曳手把
+        cropperInstance.setAspectRatio(isFixed ? (400 / 252) : NaN);
+      }
+    }
+
+    function rotateCropImage(degree) {
+      if (cropperInstance) {
+        cropperInstance.rotate(degree);
+      }
+    }
+
+    function confirmCrop() {
+      if (!cropperInstance) return;
+      
+      const isFixed = document.querySelector('input[name="cropAspect"][value="fixed"]')?.checked;
+
+      const croppedCanvas = cropperInstance.getCroppedCanvas({
+        fillColor: '#ffffff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
+
+      if (!croppedCanvas) return;
+
+      const targetCanvas = document.createElement('canvas');
+      targetCanvas.width = 800;
+      targetCanvas.height = 504;
+      const ctx = targetCanvas.getContext('2d');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 800, 504);
+
+      if (isFixed) {
+        ctx.drawImage(croppedCanvas, 0, 0, 800, 504);
+      } else {
+        const imgRatio = croppedCanvas.width / croppedCanvas.height;
+        const canvasRatio = 800 / 504;
+        let drawW, drawH, drawX, drawY;
+
+        if (imgRatio > canvasRatio) {
+          drawW = 800;
+          drawH = 800 / imgRatio;
+          drawX = 0;
+          drawY = (504 - drawH) / 2;
+        } else {
+          drawH = 504;
+          drawW = 504 * imgRatio;
+          drawX = (800 - drawW) / 2;
+          drawY = 0;
+        }
+        ctx.drawImage(croppedCanvas, drawX, drawY, drawW, drawH);
+      }
+
+      const croppedDataUrl = targetCanvas.toDataURL('image/jpeg', 0.92);
+      closeCropModal(true);
+      if (onCropSuccessCallback) onCropSuccessCallback(croppedDataUrl);
+    }
+
+    function closeCropModal(isConfirmed = false) {
+      const cropModal = document.getElementById('cropModal');
+      if (cropModal) {
+        cropModal.classList.remove('active-modal');
+        cropModal.classList.add('hidden-modal');
+      }
+
+      if (cropperInstance) {
+        cropperInstance.destroy();
+        cropperInstance = null;
+      }
+      if (!isConfirmed) {
+        onCropSuccessCallback = null;
+      }
+    }
+
+    async function handleCropResultForModal(croppedImageDataUrl, targetType) {
+      if (targetType === 'QR') {
+        currentUploadedImageData2D = croppedImageDataUrl;
+        if (imagePreview2D) imagePreview2D.src = currentUploadedImageData2D;
+        if (imagePreviewContainer2D) imagePreviewContainer2D.classList.remove('hidden');
+      } else {
+        currentUploadedImageData1D = croppedImageDataUrl;
+        if (imagePreview1D) imagePreview1D.src = currentUploadedImageData1D;
+        if (imagePreviewContainer1D) imagePreviewContainer1D.classList.remove('hidden');
+      }
+
+      const scanResult = await scanBarcodeFromImage(croppedImageDataUrl);
+      if (scanResult && scanResult.code && !scanResult.code.startsWith('http://') && !scanResult.code.startsWith('https://')) {
+        if (targetType === 'QR' || scanResult.type === 'QR') {
+          const input2D = document.getElementById('code2D');
+          if (input2D && !input2D.value) input2D.value = scanResult.code;
+        } else {
+          const input1D = document.getElementById('code1D');
+          if (input1D && !input1D.value) input1D.value = scanResult.code;
+        }
+        showToast(`已自動解碼並填入號碼：${scanResult.code}`);
+      }
+    }
+
+    async function scanBarcodeFromImage(dataUrl) {
+      try {
+        let codeDetected = null;
+        let detectedType = 'CODE128';
+
+        if ('BarcodeDetector' in window) {
+          try {
+            const detector = new BarcodeDetector();
+            const img = new Image();
+            img.src = dataUrl;
+            await new Promise(r => img.onload = r);
+            const barcodes = await detector.detect(img);
+            if (barcodes && barcodes.length > 0) {
+              codeDetected = barcodes[0].rawValue;
+              detectedType = barcodes[0].format === 'qr_code' ? 'QR' : 'CODE128';
+            }
+          } catch(err) {
+            console.log('Native BarcodeDetector info:', err);
+          }
+        }
+
+        if (!codeDetected && typeof ZXing !== 'undefined') {
+          try {
+            const codeReader = new ZXing.BrowserMultiFormatReader();
+            const img = new Image();
+            img.src = dataUrl;
+            await new Promise(r => img.onload = r);
+            const result = await codeReader.decodeFromImageElement(img);
+            if (result && result.getText()) {
+              codeDetected = result.getText();
+              const formatName = result.getBarcodeFormat() ? result.getBarcodeFormat().toString() : '';
+              detectedType = (formatName.includes('QR') || codeDetected.startsWith('http')) ? 'QR' : 'CODE128';
+            }
+          } catch(err) {
+            console.log('ZXing decode info:', err);
+          }
+        }
+
+        if (codeDetected) {
+          if (codeDetected.startsWith('http://') || codeDetected.startsWith('https://')) {
+            return null;
+          }
+          return { code: codeDetected, type: detectedType };
+        }
+      } catch (e) {
+        console.warn('Barcode auto-scan info:', e);
+      }
+      return null;
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm z-50 flex items-center gap-2';
+      toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> ${msg}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    function reCropExistingImage(targetType) {
+      // 優先使用原始未裁切圖片；若舊資料無原圖則退回使用目前圖片
+      const rawData = targetType === '1D' 
+        ? (currentRawImageData1D || currentUploadedImageData1D) 
+        : (currentRawImageData2D || currentUploadedImageData2D);
+
+      if (!rawData) {
+        showToast('目前尚無圖片可進行裁切');
+        return;
+      }
+      openCropModal(rawData, (croppedDataUrl) => {
+        handleCropResultForModal(croppedDataUrl, targetType === '1D' ? 'CODE128' : 'QR');
+      });
+    }
+
+    function clearImagePreview(targetType) {
+      if (targetType === '1D') {
+        const input = document.getElementById('imageInput1D');
+        const cam = document.getElementById('cameraInput1D');
+        if (input) input.value = '';
+        if (cam) cam.value = '';
+        currentUploadedImageData1D = '';
+        currentRawImageData1D = '';
+        if (imagePreview1D) imagePreview1D.src = '';
+        if (imagePreviewContainer1D) imagePreviewContainer1D.classList.add('hidden');
+      } else if (targetType === '2D') {
+        const input = document.getElementById('imageInput2D');
+        const cam = document.getElementById('cameraInput2D');
+        if (input) input.value = '';
+        if (cam) cam.value = '';
+        currentUploadedImageData2D = '';
+        currentRawImageData2D = '';
+        if (imagePreview2D) imagePreview2D.src = '';
+        if (imagePreviewContainer2D) imagePreviewContainer2D.classList.add('hidden');
+      }
+    }
+
+    function handleCardFormSubmit(e) {
+      e.preventDefault();
+
+      const code1DVal = document.getElementById('code1D').value.trim();
+      const code2DVal = document.getElementById('code2D').value.trim();
+
+      const newCardData = {
+        title: document.getElementById('title').value.trim(),
+        code1D: code1DVal,
+        code2D: code2DVal,
+        activeBarcodeType: (code1DVal || currentUploadedImageData1D) ? 'CODE128' : ((code2DVal || currentUploadedImageData2D) ? 'QR' : 'CODE128'),
+        owner: document.getElementById('owner').value.trim() || '蛋',
+        category: document.getElementById('category').value.trim() || '會員卡',
+        expiryDate: document.getElementById('expiryDate').value,
+        cardColor: document.getElementById('cardColor').value,
+        bgImage1D: currentUploadedImageData1D,
+        bgImage2D: currentUploadedImageData2D,
+        rawImage1D: currentRawImageData1D,
+        rawImage2D: currentRawImageData2D
+      };
+
+      if (editingCardId !== null) {
+        const index = cards.findIndex(c => c.id === editingCardId);
+        if (index !== -1) {
+          cards[index] = { ...cards[index], ...newCardData };
+          showToast('已儲存卡片變更！');
+        }
+      } else {
+        newCardData.id = Date.now();
+        cards.unshift(newCardData);
+        showToast('已成功新增卡片！');
+      }
+
+      saveAndRefresh();
+      closeAddModal();
+    }
+
+    function saveAndRefresh() {
+      saveCardsToStorage(cards);
+      updateDropdowns();
+      renderAllCards();
+    }
+
+    function getExpiryStatus(dateStr) {
+      if (!dateStr) return { status: 'none', label: '無期限', badgeClass: 'bg-slate-100 text-slate-600' };
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const exp = new Date(dateStr);
+      exp.setHours(0, 0, 0, 0);
+      
+      const diffTime = exp - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) {
+        return { status: 'expired', label: '已過期', badgeClass: 'bg-rose-100 text-rose-700 font-bold border border-rose-200' };
+      } else if (diffDays <= 30) {
+        return { status: 'warning', label: `剩 ${diffDays} 天到期`, badgeClass: 'bg-amber-100 text-amber-800 font-bold border border-amber-200' };
+      } else {
+        return { status: 'valid', label: `至 ${dateStr}`, badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
+      }
+    }
+
+    function updateDropdowns() {
+      if (!ownerFilter || !categoryFilter) return;
+      const owners = [...new Set(cards.map(c => c.owner).filter(Boolean))];
+      const categories = [...new Set(cards.map(c => c.category).filter(Boolean))];
+      const titles = [...new Set(cards.map(c => c.title).filter(Boolean))];
+
+      ownerFilter.innerHTML = '<option value="">所有持有人</option>' + owners.map(o => `<option value="${o}">${o}</option>`).join('');
+      categoryFilter.innerHTML = '<option value="">所有種類標籤</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+
+      const ownerList = document.getElementById('ownerList');
+      const categoryList = document.getElementById('categoryList');
+      const titleList = document.getElementById('titleList');
+
+      if (ownerList) ownerList.innerHTML = owners.map(o => `<option value="${o}">`).join('');
+      if (categoryList) categoryList.innerHTML = categories.map(c => `<option value="${c}">`).join('');
+      if (titleList) titleList.innerHTML = titles.map(t => `<option value="${t}">`).join('');
+    }
+
+    function renderAllCards() {
+      if (!cardGrid) return;
+      const search = (searchInput ? searchInput.value : '').toLowerCase();
+      const selectedOwner = ownerFilter ? ownerFilter.value : '';
+      const selectedCategory = categoryFilter ? categoryFilter.value : '';
+      const selectedExpiry = expiryFilter ? expiryFilter.value : '';
+
+      const filtered = cards.filter(c => {
+        normalizeCard(c);
+        const matchSearch = c.title.toLowerCase().includes(search) || 
+                            (c.code1D && c.code1D.toLowerCase().includes(search)) || 
+                            (c.code2D && c.code2D.toLowerCase().includes(search)) || 
+                            c.owner.toLowerCase().includes(search);
+        const matchOwner = !selectedOwner || c.owner === selectedOwner;
+        const matchCategory = !selectedCategory || c.category === selectedCategory;
+        
+        const expiryInfo = getExpiryStatus(c.expiryDate);
+        let matchExpiry = !selectedExpiry;
+        if (selectedExpiry === 'valid') {
+          matchExpiry = (expiryInfo.status === 'valid' || expiryInfo.status === 'none');
+        } else if (selectedExpiry) {
+          matchExpiry = (expiryInfo.status === selectedExpiry);
+        }
+
+        return matchSearch && matchOwner && matchCategory && matchExpiry;
+      });
+
+      cardGrid.innerHTML = '';
+
+      if (filtered.length === 0) {
+        cardGrid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300">
+            <i class="fa-solid fa-folder-open text-4xl mb-2"></i>
+            <p class="text-sm">沒有找到符合條件的卡片或載具</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(card => {
+        const item = document.createElement('div');
+        item.className = 'bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex flex-col gap-3';
+        
+        const canvasId = `canvas-${card.id}`;
+        const expiryInfo = getExpiryStatus(card.expiryDate);
+        const hasBothCodes = !!((card.code1D || card.bgImage1D) && (card.code2D || card.bgImage2D));
+
+        item.innerHTML = `
+          <div class="card-canvas-container cursor-pointer" onclick="openScanModal(${card.id})">
+            <canvas id="${canvasId}" width="400" height="252" class="w-full h-full block"></canvas>
+          </div>
+          <div class="flex items-center justify-between text-xs px-1">
+            <div class="flex flex-wrap gap-1.5 items-center">
+              <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium"><i class="fa-regular fa-user text-slate-400 mr-1"></i>${card.owner}</span>
+              <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium"><i class="fa-solid fa-tag text-slate-400 mr-1"></i>${card.category}</span>
+              <span class="${expiryInfo.badgeClass} px-2 py-0.5 rounded-md"><i class="fa-regular fa-clock mr-1"></i>${expiryInfo.label}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              ${hasBothCodes ? `
+              <button onclick="toggleCardBarcodeType(event, ${card.id})" class="text-slate-400 hover:text-blue-600 p-1 transition" title="切換 1D條碼 / QR Code">
+                <i class="fa-solid fa-arrows-rotate"></i>
+              </button>
+              ` : ''}
+              <button onclick="openEditModal(event, ${card.id})" class="text-slate-400 hover:text-blue-600 p-1 transition" title="編輯卡片">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="deleteCard(event, ${card.id})" class="text-slate-400 hover:text-rose-600 p-1 transition" title="刪除卡片">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        `;
+
+        cardGrid.appendChild(item);
+
+        setTimeout(() => {
+          const cvs = document.getElementById(canvasId);
+          if (cvs) drawCardCanvas(cvs, card);
+        }, 0);
+      });
+    }
+
+    function openScanModal(id) {
+      const card = cards.find(c => c.id === id);
+      if (!card) return;
+      normalizeCard(card);
+      currentScanCardId = id;
+
+      const has1D = !!(card.code1D || card.bgImage1D);
+      const has2D = !!(card.code2D || card.bgImage2D);
+
+      const toggleGroup = document.getElementById('scanBarcodeToggleGroup');
+
+      if (has1D && has2D) {
+        if (toggleGroup) toggleGroup.style.display = 'flex';
+      } else {
+        if (toggleGroup) toggleGroup.style.display = 'none';
+        if (has1D) card.activeBarcodeType = 'CODE128';
+        else if (has2D) card.activeBarcodeType = 'QR';
+      }
+
+      let displayCode = (card.activeBarcodeType === 'QR' ? card.code2D : card.code1D) || card.code1D || card.code2D || '';
+      if (displayCode.startsWith('http://') || displayCode.startsWith('https://')) {
+        displayCode = '';
+      }
+
+      document.getElementById('scanTitle').innerText = card.title;
+      document.getElementById('scanMeta').innerText = displayCode ? `號碼：${displayCode}` : '';
+
+      updateScanToggleButtons(card.activeBarcodeType || 'CODE128');
+
+      const scanCanvas = document.getElementById('scanCanvas');
+      drawCardCanvas(scanCanvas, card, true);
+
+      const modal = document.getElementById('scanModal');
+      if (modal) {
+        modal.classList.remove('hidden-modal');
+        modal.classList.add('active-modal');
+      }
+    }
+
+    function switchScanBarcodeType(type) {
+      if (!currentScanCardId) return;
+      const card = cards.find(c => c.id === currentScanCardId);
+      if (!card) return;
+
+      card.activeBarcodeType = type;
+      saveAndRefresh();
+
+      let displayCode = (type === 'QR' ? card.code2D : card.code1D) || '';
+      if (displayCode.startsWith('http://') || displayCode.startsWith('https://')) {
+        displayCode = '';
+      }
+
+      document.getElementById('scanMeta').innerText = displayCode ? `號碼：${displayCode}` : '';
+
+      updateScanToggleButtons(type);
+      const scanCanvas = document.getElementById('scanCanvas');
+      drawCardCanvas(scanCanvas, card, true);
+    }
+
+    function toggleCardBarcodeType(e, id) {
+      if (e) e.stopPropagation();
+      const card = cards.find(c => c.id === id);
+      if (!card) return;
+
+      card.activeBarcodeType = card.activeBarcodeType === 'QR' ? 'CODE128' : 'QR';
+      saveAndRefresh();
+      showToast(`已切換為${card.activeBarcodeType === 'QR' ? '二維碼 (QR Code)' : '一維條碼 (Code 128)'}`);
+    }
+
+    function updateScanToggleButtons(currentType) {
+      const btn1D = document.getElementById('scanBtn1D');
+      const btnQR = document.getElementById('scanBtnQR');
+      if (!btn1D || !btnQR) return;
+
+      if (currentType === 'QR') {
+        btn1D.className = 'px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+        btnQR.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-blue-600 shadow-sm transition flex items-center gap-1.5';
+      } else {
+        btn1D.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-blue-600 shadow-sm transition flex items-center gap-1.5';
+        btnQR.className = 'px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+      }
+    }
+
+    function closeScanModal() {
+      const modal = document.getElementById('scanModal');
+      if (modal) {
+        modal.classList.remove('active-modal');
+        modal.classList.add('hidden-modal');
+      }
+      currentScanCardId = null;
+    }
+
+    async function drawCardCanvas(canvas, cardData, isScanView = false) {
+      if (!canvas) return;
+      normalizeCard(cardData);
+
+      // 自動計算裝置畫素比 (DevicePixelRatio) 與容器實際顯示寬高，達到極致高清等比縮放
+      const dpr = Math.max(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      const displayWidth = rect.width > 0 ? rect.width : (isScanView ? 600 : 400);
+      const displayHeight = rect.height > 0 ? rect.height : (isScanView ? 378 : 252);
+
+      // 動態更新 Canvas 實體繪製像素尺寸
+      canvas.width = Math.round(displayWidth * dpr);
+      canvas.height = Math.round(displayHeight * dpr);
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const width = displayWidth;
+      const height = displayHeight;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const activeType = cardData.activeBarcodeType || 'CODE128';
+      const targetBgImage = (activeType === 'QR' ? cardData.bgImage2D : cardData.bgImage1D) || cardData.bgImage1D || cardData.bgImage2D || '';
+      const hasBgImage = !!targetBgImage;
+
+      // 1. 統一繪製卡片主題色彩背景
+      drawDefaultGradient(ctx, width, height, isScanView ? '#ffffff' : cardData.cardColor);
+
+      // 2. 繪製頂部卡片資訊 Header（卡片名稱、持有人、分類與效期）
+      if (!isScanView) {
+        const titleFontSize = Math.max(14, Math.round(width * 0.045));
+        const subFontSize = Math.max(10, Math.round(width * 0.028));
+
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${titleFontSize}px sans-serif`;
+        ctx.fillText(cardData.title, 16, titleFontSize + 8);
+
+        ctx.font = `${subFontSize}px sans-serif`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fillText(`持有人：${cardData.owner} · ${cardData.category}`, 16, titleFontSize + subFontSize + 14);
+
+        if (cardData.expiryDate) {
+          const expStatus = getExpiryStatus(cardData.expiryDate);
+          ctx.font = `bold ${subFontSize}px sans-serif`;
+          ctx.textAlign = 'right';
+          ctx.fillStyle = expStatus.status === 'expired' ? '#fca5a5' : '#e2e8f0';
+          ctx.fillText(`效期: ${cardData.expiryDate}`, width - 16, titleFontSize + 8);
+          ctx.textAlign = 'left';
+        }
+
+        ctx.shadowBlur = 0;
+      }
+
+      // 3. 統一繪製中央白色圓角框底
+      const activeCode = (activeType === 'QR' ? cardData.code2D : cardData.code1D) || cardData.code1D || cardData.code2D || '';
+      const margin = isScanView ? 12 : 10;
+      const boxHeight = isScanView ? height - (margin * 2) : height * 0.65;
+      const boxY = isScanView ? margin : height - boxHeight - margin;
+      const boxWidth = width - (margin * 2);
+
+      ctx.fillStyle = '#ffffff';
+      if (!isScanView) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+        ctx.shadowBlur = 8;
+      }
+      roundRect(ctx, margin, boxY, boxWidth, boxHeight, 10, true, false);
+      ctx.shadowBlur = 0;
+
+      // 4. 若有上傳實體圖片：將條碼圖片縮放適配於白色框底內部
+      if (hasBgImage) {
+        try {
+          const img = new Image();
+          img.src = targetBgImage;
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+
+          const padX = 12;
+          const padY = 8;
+          const hasText = !!activeCode;
+          const maxW = boxWidth - padX * 2;
+          const maxH = boxHeight - padY * 2 - (hasText ? 18 : 0);
+
+          const scale = Math.min(maxW / img.width, maxH / img.height);
+          const drawW = Math.round(img.width * scale);
+          const drawH = Math.round(img.height * scale);
+
+          const drawX = Math.round(margin + (boxWidth - drawW) / 2);
+          const drawY = Math.round(boxY + padY + (maxH - drawH) / 2);
+
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+          if (hasText) {
+            ctx.fillStyle = '#0f172a';
+            ctx.font = `bold ${Math.max(12, Math.round(width * 0.035))}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.fillText(activeCode, width / 2, boxY + boxHeight - 6);
+            ctx.textAlign = 'left';
+          }
+        } catch (e) {
+          console.warn('載入條碼圖片失敗', e);
+        }
+      } else if (activeCode) {
+        // 動態生成條碼／QR Code
+        const barcodeImg = await generateBarcodeImage(activeCode, activeType);
+        if (barcodeImg) {
+          if (activeType === 'QR') {
+            const qrSize = Math.min(boxWidth - 20, boxHeight - 16);
+            const drawX = Math.round((width - qrSize) / 2);
+            const drawY = Math.round(boxY + (boxHeight - qrSize) / 2);
+
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(barcodeImg, drawX, drawY, Math.round(qrSize), Math.round(qrSize));
+            ctx.imageSmoothingEnabled = true;
+          } else {
+            const maxW = boxWidth - 24;
+            const maxH = boxHeight - 32;
+            const bWidth = barcodeImg.width || 1;
+            const bHeight = barcodeImg.height || 1;
+
+            const scale = Math.min(maxW / bWidth, maxH / bHeight);
+            const drawW = Math.round(bWidth * scale);
+            const drawH = Math.round(bHeight * scale);
+
+            const drawX = Math.round((width - drawW) / 2);
+            const drawY = Math.round(boxY + 6 + (maxH - drawH) / 2);
+
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(barcodeImg, drawX, drawY, drawW, drawH);
+            ctx.imageSmoothingEnabled = true;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = `bold ${Math.max(12, Math.round(width * 0.035))}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.fillText(activeCode, width / 2, boxY + boxHeight - 6);
+            ctx.textAlign = 'left';
+          }
+        } else {
+          ctx.fillStyle = '#0f172a';
+          ctx.font = `bold ${Math.max(13, Math.round(width * 0.04))}px monospace`;
+          ctx.textAlign = 'center';
+          ctx.fillText(activeCode, width / 2, boxY + boxHeight / 2 + 5);
+          ctx.textAlign = 'left';
+        }
+      } else {
+        ctx.fillStyle = '#334155';
+        ctx.font = `bold ${Math.max(11, Math.round(width * 0.032))}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('📷 請填寫卡號或上傳條碼圖片', width / 2, boxY + boxHeight / 2);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    function generateBarcodeImage(codeText, type) {
+      return new Promise((resolve) => {
+        const tempCanvas = document.createElement('canvas');
+        if (type === 'QR') {
+          if (typeof QRious !== 'undefined') {
+            try {
+              const qr = new QRious({
+                element: tempCanvas,
+                value: codeText,
+                size: 300,
+                level: 'H'
+              });
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = () => resolve(null);
+              img.src = tempCanvas.toDataURL();
+              return;
+            } catch (e) {
+              console.warn('QRious generation error:', e);
+            }
+          }
+          resolve(null);
+        } else {
+          try {
+            if (typeof JsBarcode !== 'undefined') {
+              JsBarcode(tempCanvas, codeText, {
+                format: "CODE128",
+                displayValue: false,
+                margin: 0,
+                height: 80,
+                width: 2,
+                background: "#ffffff",
+                lineColor: "#000000"
+              });
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = () => resolve(null);
+              img.src = tempCanvas.toDataURL();
+            } else {
+              resolve(null);
+            }
+          } catch (e) {
+            console.warn('JsBarcode generation error:', e);
+            resolve(null);
+          }
+        }
+      });
+    }
+
+    function drawDefaultGradient(ctx, width, height, baseColor) {
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, baseColor || '#2563eb');
+      gradient.addColorStop(1, adjustColor(baseColor || '#2563eb', -40));
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    function adjustColor(col, amt) {
+      col = col.replace('#', '');
+      let num = parseInt(col, 16);
+      let r = (num >> 16) + amt; if (r > 255) r = 255; else if (r < 0) r = 0;
+      let b = ((num >> 8) & 0x00FF) + amt; if (b > 255) b = 255; else if (b < 0) b = 0;
+      let g = (num & 0x0000FF) + amt; if (g > 255) g = 255; else if (g < 0) g = 0;
+      return '#' + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+    }
+
+    function openAddModal() {
+      editingCardId = null;
+      const modalTitle = document.getElementById('modalTitle');
+      const submitBtn = document.getElementById('submitCardBtn');
+      if (modalTitle) modalTitle.innerHTML = '<i class="fa-solid fa-credit-card text-blue-600 mr-2"></i>新增會員卡 / 載具';
+      if (submitBtn) submitBtn.innerText = '合成並繪製卡片';
+      if (cardForm) cardForm.reset();
+      const ownerInput = document.getElementById('owner');
+      if (ownerInput) ownerInput.value = '蛋';
+      clearImagePreview('1D');
+      clearImagePreview('2D');
+
+      const modal = document.getElementById('addModal');
+      if (modal) {
+        modal.classList.remove('hidden-modal');
+        modal.classList.add('active-modal');
+      }
+    }
+
+    function openEditModal(e, id) {
+      if (e) e.stopPropagation();
+      const card = cards.find(c => c.id === id);
+      if (!card) return;
+      normalizeCard(card);
+
+      editingCardId = id;
+      const modalTitle = document.getElementById('modalTitle');
+      const submitBtn = document.getElementById('submitCardBtn');
+      if (modalTitle) modalTitle.innerHTML = '<i class="fa-solid fa-pen-to-square text-blue-600 mr-2"></i>編輯會員卡 / 載具';
+      if (submitBtn) submitBtn.innerText = '儲存卡片變更';
+
+      document.getElementById('title').value = card.title || '';
+      document.getElementById('code1D').value = card.code1D || '';
+      document.getElementById('code2D').value = card.code2D || '';
+      document.getElementById('owner').value = card.owner || '蛋';
+      document.getElementById('category').value = card.category || '';
+      document.getElementById('expiryDate').value = card.expiryDate || '';
+      document.getElementById('cardColor').value = card.cardColor || '#2563eb';
+
+      if (card.bgImage1D) {
+        currentUploadedImageData1D = card.bgImage1D;
+        currentRawImageData1D = card.rawImage1D || card.bgImage1D;
+        if (imagePreview1D) imagePreview1D.src = card.bgImage1D;
+        if (imagePreviewContainer1D) imagePreviewContainer1D.classList.remove('hidden');
+      } else {
+        clearImagePreview('1D');
+      }
+
+      if (card.bgImage2D) {
+        currentUploadedImageData2D = card.bgImage2D;
+        currentRawImageData2D = card.rawImage2D || card.bgImage2D;
+        if (imagePreview2D) imagePreview2D.src = card.bgImage2D;
+        if (imagePreviewContainer2D) imagePreviewContainer2D.classList.remove('hidden');
+      } else {
+        clearImagePreview('2D');
+      }
+
+      const modal = document.getElementById('addModal');
+      if (modal) {
+        modal.classList.remove('hidden-modal');
+        modal.classList.add('active-modal');
+      }
+    }
+
+    function closeAddModal() {
+      const modal = document.getElementById('addModal');
+      if (modal) {
+        modal.classList.remove('active-modal');
+        modal.classList.add('hidden-modal');
+      }
+      editingCardId = null;
+      if (cardForm) cardForm.reset();
+      clearImagePreview('1D');
+      clearImagePreview('2D');
+    }
+
+    function deleteCard(e, id) {
+      if (e) e.stopPropagation();
+      pendingDeleteId = id;
+      const modal = document.getElementById('deleteModal');
+      if (modal) {
+        modal.classList.remove('hidden-modal');
+        modal.classList.add('active-modal');
+      }
+    }
+
+    function closeDeleteModal() {
+      pendingDeleteId = null;
+      const modal = document.getElementById('deleteModal');
+      if (modal) {
+        modal.classList.remove('active-modal');
+        modal.classList.add('hidden-modal');
+      }
+    }
+
+    function confirmDeleteCard() {
+      if (pendingDeleteId !== null) {
+        cards = cards.filter(c => c.id !== pendingDeleteId);
+        saveAndRefresh();
+        showToast('已成功刪除卡片');
+      }
+      closeDeleteModal();
+    }
+
+    // 將所有按鈕可呼叫的函式綁定至全域 window，確保 HTML inline onclick 呼叫絕對成功
+    window.openAddModal = openAddModal;
+    window.openEditModal = openEditModal;
+    window.closeAddModal = closeAddModal;
+    window.openScanModal = openScanModal;
+    window.closeScanModal = closeScanModal;
+    window.switchScanBarcodeType = switchScanBarcodeType;
+    window.toggleCardBarcodeType = toggleCardBarcodeType;
+    window.deleteCard = deleteCard;
+    window.closeDeleteModal = closeDeleteModal;
+    window.confirmDeleteCard = confirmDeleteCard;
+    window.clearImagePreview = clearImagePreview;
+    window.toggleCropAspectRatio = toggleCropAspectRatio;
+    window.rotateCropImage = rotateCropImage;
+    window.confirmCrop = confirmCrop;
+    window.closeCropModal = closeCropModal;
+    window.reCropExistingImage = reCropExistingImage;
+  </script>
+</body>
+</html>
