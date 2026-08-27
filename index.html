@@ -111,19 +111,20 @@
         .nav-dot {
             position: relative;
             z-index: 2;
-            width: 14px;
-            height: 14px;
-            background-color: var(--card-bg);
-            border: 3px solid var(--accent);
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, var(--accent) 70%, #6d4722 100%);
+            border: 2px solid #ffffff;
             border-radius: 50%;
+            box-shadow: 0 3px 8px rgba(158, 109, 61, 0.4);
             transition: all 0.3s ease;
             display: block;
             text-decoration: none;
         }
 
         .nav-dot:hover {
-            transform: scale(1.3);
-            background-color: var(--accent);
+            transform: scale(1.4);
+            box-shadow: 0 4px 12px rgba(158, 109, 61, 0.6);
         }
 
         .nav-dot .tooltip, .left-fab .fab-tooltip {
@@ -141,7 +142,7 @@
         }
 
         .nav-dot .tooltip {
-            left: 24px;
+            left: 26px;
             top: 50%;
             transform: translateY(-50%);
         }
@@ -236,9 +237,8 @@
             margin-bottom: 0;
         }
 
-        .skills-grid, .projects-grid {
+        .skills-grid, .cert-list, .projects-grid {
             display: grid;
-            grid-template-columns: 1fr;
             gap: 16px;
         }
 
@@ -247,9 +247,23 @@
             gap: 12px;
         }
 
-        @media (min-width: 540px) {
-            .projects-grid {
+        .cert-list {
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 640px) {
+            .cert-list {
                 grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .projects-grid {
+            grid-template-columns: repeat(1, 1fr);
+        }
+
+        @media (min-width: 640px) {
+            .projects-grid {
+                grid-template-columns: repeat(4, 1fr);
             }
         }
 
@@ -302,19 +316,6 @@
             font-size: 13px;
         }
 
-        .cert-list {
-            list-style: none;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        @media (min-width: 640px) {
-            .cert-list {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
         .cert-item {
             background-color: #f7f3eb;
             padding: 14px 16px;
@@ -328,7 +329,7 @@
             text-align: center;
         }
 
-        .cert-item:hover, .project-card:hover {
+        .cert-item:hover, .project-card:hover, .skill-card:hover {
             transform: translateY(-4px);
             border-color: var(--accent);
             box-shadow: 0 6px 16px rgba(158, 109, 61, 0.15);
@@ -340,25 +341,25 @@
 
         .project-card {
             background-color: #f7f3eb;
-            padding: 20px 16px;
-            text-align: center;
+            padding: 12px;
+            text-align: left;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            min-height: 120px;
+            justify-content: flex-start;
             text-decoration: none;
             color: inherit;
+            align-items: stretch;
         }
 
         .project-card h3 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .project-card p {
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .contact-list {
@@ -372,6 +373,7 @@
             align-items: center;
             gap: 8px;
             color: var(--text-secondary);
+            flex-wrap: wrap;
         }
 
         .contact-list li:last-child {
@@ -447,12 +449,12 @@
 <body>
 
     <!-- Left Floating Action Button -->
-    <a href="#about" class="left-fab" id="scrollTopBtn" title="返回頂端或關於我">
+    <a href="#about" class="left-fab" id="scrollTopBtn" title="返回頂端">
         <span>↑</span>
         <div class="fab-tooltip">回到頂端</div>
     </a>
 
-    <!-- Left Floating Connected Dots Navigation -->
+    <!-- Left Floating Connected Spheres Navigation -->
     <nav class="left-nav">
         <div class="left-nav-container">
             <a href="#about" class="nav-dot"><span class="tooltip">關於我</span></a>
@@ -522,7 +524,7 @@
             </ul>
 
             <h2 style="margin-top: 32px; font-size: 20px;">AI認證</h2>
-            <div class="projects-grid" style="margin-top: 16px;">
+            <div class="cert-list" style="margin-top: 16px;">
                 <!-- AI Cert 1 -->
                 <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
                     <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3;">
@@ -558,38 +560,38 @@
             </div>
 
             <h2 style="margin-top: 32px; font-size: 20px;">MOS證書</h2>
-            <div class="projects-grid" style="margin-top: 16px;">
+            <div class="cert-list" style="margin-top: 16px;">
                 <!-- MOS Cert 1 -->
                 <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
-                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700;">
-                        MOS 證書預留一
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; position: relative;">
+                        <canvas id="mosExcelCanvas" width="300" height="120" style="width: 100%; height: 100%; display: block;"></canvas>
                     </div>
                     <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">MICROSOFT 認證</div>
-                    <h3 style="font-size: 15px; margin-bottom: 6px;">MOS 專業認證</h3>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">此處可放置您的 MOS 證書簡短說明與介紹文字內容。</p>
-                    <a href="#" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看證書</a>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">Microsoft Excel Expert (Microsoft 365 Apps)</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">具備進階 Excel 資料管理與巨集運算專業能力認證。</p>
+                    <a href="https://win880623-droid.github.io/portfolio/Excel%20Expert.pdf">查看證書</a>
                 </div>
 
                 <!-- MOS Cert 2 -->
                 <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
-                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700;">
-                        MOS 證書預留二
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; position: relative;">
+                        <canvas id="mosPptCanvas" width="300" height="120" style="width: 100%; height: 100%; display: block;"></canvas>
                     </div>
                     <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">MICROSOFT 認證</div>
-                    <h3 style="font-size: 15px; margin-bottom: 6px;">MOS 專業認證</h3>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">此處可放置您的 MOS 證書簡短說明與介紹文字內容。</p>
-                    <a href="#" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看證書</a>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">Microsoft PowerPoint (Microsoft 365 Apps)</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">具備專業簡報設計、視覺化排版與多媒體展示應用認證。</p>
+                    <a href="https://win880623-droid.github.io/portfolio/PowerPoint%20Associate.pdf">查看證書</a>
                 </div>
 
                 <!-- MOS Cert 3 -->
                 <div class="project-card" style="padding: 16px; text-align: left; align-items: stretch;">
-                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700;">
-                        MOS 證書預留三
+                    <div style="width: 100%; height: 120px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; background: #e0d2c3; position: relative;">
+                        <canvas id="mosWordCanvas" width="300" height="120" style="width: 100%; height: 100%; display: block;"></canvas>
                     </div>
                     <div style="font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px;">MICROSOFT 認證</div>
-                    <h3 style="font-size: 15px; margin-bottom: 6px;">MOS 專業認證</h3>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">此處可放置您的 MOS 證書簡短說明與介紹文字內容。</p>
-                    <a href="#" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看證書</a>
+                    <h3 style="font-size: 15px; margin-bottom: 6px;">Microsoft Word Expert (Microsoft 365 Apps)</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">具備進階文件編排、長篇報告排版與排版格式專家認證。</p>
+                    <a href="https://win880623-droid.github.io/portfolio/Word%20Expert.pdf" target="_blank" style="margin-top: auto; display: block; text-align: center; background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">查看證書</a>
                 </div>
             </div>
         </section>
@@ -597,34 +599,34 @@
         <!-- Projects -->
         <section id="projects">
             <h2>作品</h2>
-            <div class="projects-grid" style="grid-template-columns: repeat(4, 1fr);">
-                <a href="https://win880623-droid.github.io/portfolio/tetris.html" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+            <div class="projects-grid">
+                <a href="https://win880623-droid.github.io/portfolio/tetris.html" target="_blank" class="project-card">
                     <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
                         <canvas id="tetrisCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
                     </div>
-                    <h3 style="font-size: 14px; margin-bottom: 4px;">俄羅斯方塊小遊戲</h3>
-                    <p style="font-size: 12px;">點擊體驗經典益智遊戲實作</p>
+                    <h3>俄羅斯方塊小遊戲</h3>
+                    <p>點擊體驗經典益智遊戲實作</p>
                 </a>
-                <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+                <a href="https://win880623-droid.github.io/portfolio/exceltip.html" target="_blank" class="project-card">
                     <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
                         <canvas id="excelCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
                     </div>
-                    <h3 style="font-size: 14px; margin-bottom: 4px;">excel快捷鍵小工具</h3>
-                    <p style="font-size: 12px;">點擊體驗實用的快捷鍵學習工具</p>
+                    <h3>excel快捷鍵小工具</h3>
+                    <p>點擊體驗實用的快捷鍵學習工具</p>
                 </a>
-                <a href="https://zero818aiclasstest.onrender.com/" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+                <a href="https://0804aiclasstest-production.up.railway.app/" target="_blank" class="project-card">
                     <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
                         <canvas id="fortuneCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
                     </div>
-                    <h3 style="font-size: 14px; margin-bottom: 4px;">線上籤運網頁</h3>
-                    <p style="font-size: 12px;">點擊體驗線上抽籤與運勢測驗</p>
+                    <h3>線上籤運網頁</h3>
+                    <p>點擊體驗線上抽籤與運勢測驗</p>
                 </a>
-                <a href="https://win880623-droid.github.io/portfolio/kanban.html" target="_blank" class="project-card" style="padding: 12px; text-align: left; align-items: stretch;">
+                <a href="https://win880623-droid.github.io/portfolio/kanban.html" target="_blank" class="project-card">
                     <div style="width: 100%; height: 90px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; background: #e0d2c3; position: relative;">
                         <canvas id="kanbanCanvas" width="200" height="90" style="width: 100%; height: 100%; display: block;"></canvas>
                     </div>
-                    <h3 style="font-size: 14px; margin-bottom: 4px;">Kanban任務版</h3>
-                    <p style="font-size: 12px;">使用Canvas互動製作</p>
+                    <h3>Kanban任務版</h3>
+                    <p>使用Canvas互動製作</p>
                 </a>
             </div>
         </section>
@@ -667,15 +669,59 @@
             }
         });
 
-        // Draw Project Previews on Canvas
+        // Draw Project Previews and MOS Thumbnails on Canvas
         window.addEventListener('DOMContentLoaded', () => {
+            // MOS Excel Canvas Thumbnail
+            const mosExcelCanvas = document.getElementById('mosExcelCanvas');
+            if (mosExcelCanvas) {
+                const ctx = mosExcelCanvas.getContext('2d');
+                ctx.fillStyle = '#107c41'; // Excel Green theme
+                ctx.fillRect(0, 0, mosExcelCanvas.width, mosExcelCanvas.height);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillText('XLSX', 24, 50);
+                ctx.font = '14px sans-serif';
+                ctx.fillText('Microsoft Excel Expert', 24, 80);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(200, 10, 80, 100);
+            }
+
+            // MOS PowerPoint Canvas Thumbnail
+            const mosPptCanvas = document.getElementById('mosPptCanvas');
+            if (mosPptCanvas) {
+                const ctx = mosPptCanvas.getContext('2d');
+                ctx.fillStyle = '#d83b01'; // PPT Orange-Red theme
+                ctx.fillRect(0, 0, mosPptCanvas.width, mosPptCanvas.height);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillText('PPTX', 24, 50);
+                ctx.font = '14px sans-serif';
+                ctx.fillText('Microsoft PowerPoint', 24, 80);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(200, 10, 80, 100);
+            }
+
+            // MOS Word Canvas Thumbnail
+            const mosWordCanvas = document.getElementById('mosWordCanvas');
+            if (mosWordCanvas) {
+                const ctx = mosWordCanvas.getContext('2d');
+                ctx.fillStyle = '#2b579a'; // Word Blue theme
+                ctx.fillRect(0, 0, mosWordCanvas.width, mosWordCanvas.height);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillText('DOCX', 24, 50);
+                ctx.font = '14px sans-serif';
+                ctx.fillText('Microsoft Word Expert', 24, 80);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(200, 10, 80, 100);
+            }
+
             // Tetris Preview
             const tetrisCanvas = document.getElementById('tetrisCanvas');
             if (tetrisCanvas) {
                 const ctx = tetrisCanvas.getContext('2d');
                 ctx.fillStyle = '#f3e9db';
                 ctx.fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
-                // Draw mock blocks
                 ctx.fillStyle = '#9e6d3d';
                 ctx.fillRect(70, 20, 20, 20);
                 ctx.fillRect(90, 20, 20, 20);
@@ -690,7 +736,6 @@
                 const ctx = excelCanvas.getContext('2d');
                 ctx.fillStyle = '#f3e9db';
                 ctx.fillRect(0, 0, excelCanvas.width, excelCanvas.height);
-                // Draw grid lines
                 ctx.strokeStyle = '#d4cec7';
                 ctx.lineWidth = 1;
                 for(let i=20; i<200; i+=30) {
@@ -709,7 +754,6 @@
                 const ctx = fortuneCanvas.getContext('2d');
                 ctx.fillStyle = '#f3e9db';
                 ctx.fillRect(0, 0, fortuneCanvas.width, fortuneCanvas.height);
-                // Draw fortune stick container mockup
                 ctx.fillStyle = '#9e6d3d';
                 ctx.beginPath();
                 ctx.roundRect ? ctx.roundRect(80, 15, 40, 60, 6) : ctx.rect(80, 15, 40, 60);
@@ -719,20 +763,17 @@
             }
 
             // Kanban Preview
-            const canvas = document.getElementById('kanbanCanvas');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
+            const kanbanCanvas = document.getElementById('kanbanCanvas');
+            if (kanbanCanvas) {
+                const ctx = kanbanCanvas.getContext('2d');
                 ctx.fillStyle = '#f3e9db';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillRect(0, 0, kanbanCanvas.width, kanbanCanvas.height);
 
-                // Draw 3 columns
                 ctx.fillStyle = '#ffffff';
-                ctx.roundRect ? ctx.roundRect(10, 10, 55, 70, 4) : ctx.fillRect(10, 10, 55, 70);
-                ctx.roundRect ? ctx.roundRect(72, 10, 55, 70, 4) : ctx.fillRect(72, 10, 55, 70);
-                ctx.roundRect ? ctx.roundRect(134, 10, 55, 70, 4) : ctx.fillRect(134, 10, 55, 70);
-                ctx.fill();
+                ctx.fillRect(10, 10, 55, 70);
+                ctx.fillRect(72, 10, 55, 70);
+                ctx.fillRect(134, 10, 55, 70);
 
-                // Draw mock task cards
                 ctx.fillStyle = '#9e6d3d';
                 ctx.fillRect(16, 18, 43, 14);
                 ctx.fillRect(16, 36, 43, 14);
